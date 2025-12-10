@@ -1,34 +1,28 @@
-import { Controller, Get, UseGuards, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt.guard';
-import {
-  ClientProxy,
-  ClientProxyFactory,
-  Transport,
-} from '@nestjs/microservices';
 
 @Controller('tasks')
 export class TasksController {
-  private client: ClientProxy;
-  constructor() {
-    this.client = ClientProxyFactory.create({
-      transport: Transport.RMQ,
-      options: {
-        urls: [process.env.RMQ_URL || 'amqp://admin:admin@rabbitmq:5672'],
-        queue: 'task_queue',
-        queueOptions: { durable: false },
-      },
-    });
-  }
-
   @UseGuards(JwtAuthGuard)
   @Get()
-  getTasks(@Body() body: any) {
-    return this.client.send('get_tasks', body).toPromise();
+  getTasks() {
+    return [
+      {
+        id: 1,
+        title: 'Tarefa de teste',
+        status: 'TODO',
+        assignedTo: ['user-id-123'],
+      },
+    ];
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  createTask(@Body() body: any) {
-    return this.client.send('create_task', body).toPromise();
+  createTask(@Body() body: { title: string; status?: string }) {
+    return {
+      id: Math.floor(Math.random() * 1000),
+      title: body.title,
+      status: body.status || 'TODO',
+    };
   }
 }
