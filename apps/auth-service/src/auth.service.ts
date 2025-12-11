@@ -11,14 +11,20 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  private generateTokens(userId: string) {
-    const accessToken = this.jwtService.sign(
-      { sub: userId },
-      { expiresIn: '15m' },
-    );
+  private generateTokens(user: {
+    id: string;
+    email: string;
+    username: string;
+  }) {
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      username: user.username,
+    };
 
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
     const refreshToken = this.jwtService.sign(
-      { sub: userId },
+      { sub: user.id },
       { expiresIn: '7d' },
     );
 
@@ -35,7 +41,7 @@ export class AuthService {
         password: hashed,
       });
 
-      const tokens = this.generateTokens(user.id);
+      const tokens = this.generateTokens(user);
 
       return {
         status: 'created',
@@ -48,16 +54,9 @@ export class AuthService {
       };
     } catch (err: any) {
       if (err.code === '23505') {
-        return {
-          error: 'Email already registered',
-          field: 'email',
-        };
+        return { error: 'Email already registered', field: 'email' };
       }
-
-      return {
-        error: 'Internal error',
-        details: err.message,
-      };
+      return { error: 'Internal error', details: err.message };
     }
   }
 
@@ -68,7 +67,7 @@ export class AuthService {
     const valid = await bcrypt.compare(data.password, user.password);
     if (!valid) return { error: 'Invalid credentials' };
 
-    const tokens = this.generateTokens(user.id);
+    const tokens = this.generateTokens(user);
 
     return {
       ...tokens,
