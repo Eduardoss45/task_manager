@@ -56,7 +56,7 @@ export class AuthController {
     });
   }
 
-  @Get('refresh')
+  @Post('refresh')
   async refresh(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies.refreshToken;
 
