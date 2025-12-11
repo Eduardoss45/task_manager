@@ -8,12 +8,13 @@ async function bootstrap() {
     {
       transport: Transport.RMQ,
       options: {
-        urls: [process.env.RMQ_URL || 'amqp://admin:admin@rabbitmq:5672'],
+        urls: [process.env.RMQ_URL!],
         queue: 'auth_queue',
         queueOptions: { durable: false },
       },
     },
   );
   await app.listen();
+  console.log('Auth microservice is listening to RabbitMQ...');
 }
 bootstrap();
