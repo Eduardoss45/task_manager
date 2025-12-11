@@ -1,3 +1,4 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AuthModule } from './auth.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -13,6 +14,13 @@ async function bootstrap() {
         queueOptions: { durable: false },
       },
     },
+  );
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
   );
   await app.listen();
   console.log('Auth microservice is listening to RabbitMQ...');

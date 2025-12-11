@@ -21,7 +21,7 @@ import { User } from './entity/user.entity';
     TypeOrmModule.forFeature([User]),
 
     JwtModule.register({
-      secret: process.env.JWT_SECRET,
+      secret: process.env.JWT_SECRET!,
       signOptions: { expiresIn: '15m' },
     }),
   ],

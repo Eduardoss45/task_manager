@@ -1,9 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { LoginDto, RegisterDto } from '@jungle/dtos';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +15,7 @@ export class AuthService {
     return firstValueFrom(this.client.send({ cmd: 'register' }, data));
   }
 
-  async refresh(refreshToken: RefreshTokenDto) {
+  async refresh(refreshToken: string) {
     return firstValueFrom(
       this.client.send({ cmd: 'refresh' }, { refreshToken }),
     );
