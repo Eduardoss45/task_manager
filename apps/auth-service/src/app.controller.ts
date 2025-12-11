@@ -6,10 +6,9 @@ export class AppController {
   @MessagePattern({ cmd: 'login' })
   async handleLogin(data: {
     email: string;
-    username: string;
     password: string;
   }) {
-    console.log('Received login data:', data);
+    console.log('Received login data:', data); 
     // Aqui você processa o login, valida usuário, cria token etc.
     return { status: 'ok', user: data.email };
   }
