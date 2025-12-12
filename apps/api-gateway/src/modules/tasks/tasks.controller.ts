@@ -9,82 +9,51 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { TasksService } from './tasks.service';
 import { JwtAuthGuard } from '../security/jwt.guard';
+import { CreateCommentDto, UpdateTaskDto, CreateTaskDto } from '@jungle/dtos';
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
 export class TasksController {
-  // GET /api/tasks?page=&size=
+  constructor(private readonly tasksService: TasksService) {}
+
   @Get()
-  getTasks(@Query('page') page: number, @Query('size') size: number) {
-    return {
-      message: 'Lista de tarefas',
-      page: page || 1,
-      size: size || 10,
-      data: [],
-    };
+  async getTasks(@Query('page') page: number, @Query('size') size: number) {
+    return this.tasksService.getTasks(page, size);
   }
 
-  // POST /api/tasks
   @Post()
-  createTask(@Body() body: any) {
-    return {
-      message: 'task.created',
-      task: body,
-    };
+  async createTask(@Body() body: CreateTaskDto) {
+    return this.tasksService.createTask(body);
   }
 
-  // GET /api/tasks/:id
   @Get(':id')
-  getTask(@Param('id') id: string) {
-    return {
-      message: 'Detalhe da tarefa',
-      taskId: id,
-    };
+  async getTask(@Param('id') id: string) {
+    return this.tasksService.getTask(id);
   }
 
-  // PUT /api/tasks/:id
   @Put(':id')
-  updateTask(@Param('id') id: string, @Body() body: any) {
-    return {
-      message: 'task.updated',
-      taskId: id,
-      updates: body,
-    };
+  async updateTask(@Param('id') id: string, @Body() body: UpdateTaskDto) {
+    return this.tasksService.updateTask(id, body);
   }
 
-  // DELETE /api/tasks/:id
   @Delete(':id')
-  deleteTask(@Param('id') id: string) {
-    return {
-      message: 'task.deleted',
-      taskId: id,
-    };
+  async deleteTask(@Param('id') id: string) {
+    return this.tasksService.deleteTask(id);
   }
 
-  // POST /api/tasks/:id/comments
   @Post(':id/comments')
-  createComment(@Param('id') id: string, @Body() body: any) {
-    return {
-      message: 'task.comment.created',
-      taskId: id,
-      comment: body,
-    };
+  async createComment(@Param('id') id: string, @Body() body: CreateCommentDto) {
+    return this.tasksService.createComment(id, body);
   }
 
-  // GET /api/tasks/:id/comments?page=&size=
   @Get(':id/comments')
-  getComments(
+  async getComments(
     @Param('id') id: string,
     @Query('page') page: number,
     @Query('size') size: number,
   ) {
-    return {
-      message: 'Lista de comentários',
-      taskId: id,
-      page: page || 1,
-      size: size || 10,
-      data: [],
-    };
+    return this.tasksService.getComments(id, page, size);
   }
 }

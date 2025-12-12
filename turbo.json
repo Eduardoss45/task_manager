@@ -27,7 +27,9 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "outputs": [],
+      "dependsOn": []
     }
   }
 }

@@ -81,8 +81,19 @@ export class AuthService {
 
   async refresh(token: string) {
     try {
-      const payload = this.jwtService.verify(token);
-      const tokens = this.generateTokens(payload.sub);
+      const payload = this.jwtService.verify<{ sub: string }>(token);
+
+      if (!payload.sub) throw new Error('Invalid token payload');
+
+      const user = await this.users.findById(payload.sub);
+      if (!user) throw new Error('User not found');
+
+      const tokens = this.generateTokens({
+        id: user.id,
+        email: user.email,
+        username: user.username,
+      });
+
       return tokens;
     } catch {
       return { error: 'Invalid token' };
