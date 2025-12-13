@@ -11,7 +11,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  private generateTokens(user: {
+  private async generateTokens(user: {
     id: string;
     email: string;
     username: string;
@@ -23,6 +23,7 @@ export class AuthService {
     };
 
     const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+
     const refreshToken = this.jwtService.sign(
       { sub: user.id },
       { expiresIn: '7d' },
@@ -32,32 +33,28 @@ export class AuthService {
   }
 
   async register(data: RegisterDto) {
-    try {
-      const hashed = await bcrypt.hash(data.password, 10);
+    const hashed = await bcrypt.hash(data.password, 10);
 
-      const user = await this.users.createUser({
-        email: data.email,
-        username: data.username,
-        password: hashed,
-      });
+    const user = await this.users.createUser({
+      email: data.email,
+      username: data.username,
+      password: hashed,
+    });
 
-      const tokens = this.generateTokens(user);
+    const tokens = await this.generateTokens(user);
 
-      return {
-        status: 'created',
-        user: {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-        },
-        ...tokens,
-      };
-    } catch (err: any) {
-      if (err.code === '23505') {
-        return { error: 'Email already registered', field: 'email' };
-      }
-      return { error: 'Internal error', details: err.message };
-    }
+    const refreshHash = await bcrypt.hash(tokens.refreshToken, 10);
+    await this.users.updateRefreshToken(user.id, refreshHash);
+
+    return {
+      status: 'created',
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+      },
+      ...tokens,
+    };
   }
 
   async login(data: LoginDto) {
@@ -67,32 +64,42 @@ export class AuthService {
     const valid = await bcrypt.compare(data.password, user.password);
     if (!valid) return { error: 'Invalid credentials' };
 
-    const tokens = this.generateTokens(user);
+    const tokens = await this.generateTokens(user);
+
+    const refreshHash = await bcrypt.hash(tokens.refreshToken, 10);
+    await this.users.updateRefreshToken(user.id, refreshHash);
 
     return {
-      ...tokens,
       user: {
         id: user.id,
         email: user.email,
         username: user.username,
       },
+      ...tokens,
     };
   }
 
-  async refresh(token: string) {
+  async refresh(refreshToken: string) {
     try {
-      const payload = this.jwtService.verify<{ sub: string }>(token);
-
-      if (!payload.sub) throw new Error('Invalid token payload');
+      const payload = this.jwtService.verify<{ sub: string }>(refreshToken);
 
       const user = await this.users.findById(payload.sub);
-      if (!user) throw new Error('User not found');
+      if (!user || !user.refreshTokenHash) {
+        throw new Error('Access denied');
+      }
 
-      const tokens = this.generateTokens({
+      const valid = await bcrypt.compare(refreshToken, user.refreshTokenHash);
+
+      if (!valid) throw new Error('Invalid refresh token');
+
+      const tokens = await this.generateTokens({
         id: user.id,
         email: user.email,
         username: user.username,
       });
+
+      const newRefreshHash = await bcrypt.hash(tokens.refreshToken, 10);
+      await this.users.updateRefreshToken(user.id, newRefreshHash);
 
       return tokens;
     } catch {
