@@ -10,10 +10,6 @@ export class NotificationsService {
     console.log('📢 NOTIFY - Task updated:', data);
   }
 
-  async handleTaskDeleted(data: any) {
-    console.log('📢 NOTIFY - Task deleted:', data);
-  }
-
   async handleCommentCreated(data: any) {
     console.log('📢 NOTIFY - New comment:', data);
   }

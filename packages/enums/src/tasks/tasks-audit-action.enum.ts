@@ -1,0 +1,5 @@
+export enum TaskAuditAction {
+  TASK_CREATED = "TASK_CREATED",
+  TASK_UPDATED = "TASK_UPDATED",
+  COMMENT_ADDED = "COMMENT_ADDED",
+}

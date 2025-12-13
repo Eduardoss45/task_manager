@@ -1,5 +1,5 @@
 import { CreateTaskDto, UpdateTaskDto, CreateCommentDto } from '@jungle/dtos';
-import { TaskPriority, TaskStatus } from '@jungle/enums';
+import { TaskPriority, TaskStatus, TaskAuditAction } from '@jungle/enums';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   Injectable,
@@ -91,10 +91,16 @@ export class TasksService {
     const created = await this.repo.createTask(taskEntity);
 
     await this.audit.log(
-      'TASK_CREATED',
+      TaskAuditAction.TASK_CREATED,
       created.id,
       null,
-      created,
+      {
+        id: created.id,
+        title: created.title,
+        status: created.status,
+        priority: created.priority,
+        dueDate: created.dueDate,
+      },
       task.authorId,
     );
 
@@ -131,20 +137,23 @@ export class TasksService {
     return { ...task, audit };
   }
 
-  async updateTask(id: string, updates: UpdateTaskDto & { authorId?: string }) {
+  async updateTask(id: string, updates: UpdateTaskDto & { actorId?: string }) {
     this.assertUUID(id, 'Task ID');
+
     const before = await this.repo.findTaskById(id);
     if (!before) throw new NotFoundException('Task not found');
 
-    const newPriority = this.mapPriorityOrThrow(updates.priority);
-    const newStatus = this.mapStatusOrThrow(updates.status);
+    const { actorId, ...taskUpdates } = updates;
+
+    const newPriority = this.mapPriorityOrThrow(taskUpdates.priority);
+    const newStatus = this.mapStatusOrThrow(taskUpdates.status);
 
     const updatesEntity: Partial<Task> = {
-      ...updates,
-      dueDate: this.normalizeDate(updates.dueDate),
+      ...taskUpdates,
+      dueDate: this.normalizeDate(taskUpdates.dueDate),
       priority: newPriority,
       status: newStatus,
-      assignedUserIds: updates.assignedUserIds ?? undefined,
+      assignedUserIds: taskUpdates.assignedUserIds ?? undefined,
     };
 
     if (updatesEntity.assignedUserIds) {
@@ -154,64 +163,44 @@ export class TasksService {
     await this.repo.updateTask(id, updatesEntity);
     const after = await this.repo.findTaskById(id);
 
-    await this.audit.log(
-      'TASK_UPDATED',
-      id,
-      before,
-      after,
-      updates.authorId ?? 'system',
-    );
+    const changes: Record<string, { before: any; after: any }> = {};
 
-    const payload = {
-      taskId: id,
-      before: JSON.parse(JSON.stringify(before)),
-      after: JSON.parse(JSON.stringify(after)),
-      actorId: updates.authorId ?? 'system',
-    };
+    for (const key of Object.keys(updatesEntity)) {
+      if (
+        updatesEntity[key] !== undefined &&
+        before[key] !== updatesEntity[key]
+      ) {
+        changes[key] = {
+          before: before[key],
+          after: updatesEntity[key],
+        };
+      }
+    }
 
-    this.client
-      .emit('task.updated', payload)
-      .pipe(
-        catchError((err) => {
-          this.logger.error('Failed to emit task.updated', err);
-          return of(null);
-        }),
-      )
-      .subscribe();
+    if (Object.keys(changes).length > 0) {
+      await this.audit.log(
+        TaskAuditAction.TASK_UPDATED,
+        id,
+        Object.fromEntries(
+          Object.entries(changes).map(([k, v]) => [k, v.before]),
+        ),
+        Object.fromEntries(
+          Object.entries(changes).map(([k, v]) => [k, v.after]),
+        ),
+        actorId ?? 'system',
+      );
+    }
 
     return after;
   }
 
-  async deleteTask(id: string, authorId?: string) {
+  async deleteTask(id: string) {
     this.assertUUID(id, 'Task ID');
 
     const before = await this.repo.findTaskById(id);
     if (!before) throw new NotFoundException('Task not found');
 
     await this.repo.deleteTask(id);
-    await this.audit.log(
-      'TASK_DELETED',
-      id,
-      before,
-      null,
-      authorId ?? 'system',
-    );
-
-    const payload = {
-      taskId: id,
-      before: JSON.parse(JSON.stringify(before)),
-      actorId: authorId ?? 'system',
-    };
-
-    this.client
-      .emit('task.deleted', payload)
-      .pipe(
-        catchError((err) => {
-          this.logger.error('Failed to emit task.deleted', err);
-          return of(null);
-        }),
-      )
-      .subscribe();
 
     return { deleted: true };
   }
@@ -234,11 +223,13 @@ export class TasksService {
     const createdComment = await this.repo.createComment(commentEntity);
 
     await this.audit.log(
-      'COMMENT_ADDED',
+      TaskAuditAction.COMMENT_ADDED,
       taskId,
       null,
-      createdComment,
-      comment.authorId ?? 'system',
+      {
+        commentId: createdComment.id,
+      },
+      comment.authorId,
     );
 
     const payload = {

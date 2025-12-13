@@ -14,7 +14,7 @@ export class TaskAuditRepository {
     return this.repo.save(this.repo.create(record));
   }
 
-  findByTask(taskId: string, limit = 50) {
+  findByTask(taskId: string, limit: number) {
     return this.repo.find({
       where: { taskId },
       order: { createdAt: 'DESC' },

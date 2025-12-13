@@ -16,11 +16,6 @@ export class NotificationsController {
     return this.service.handleTaskUpdated(data);
   }
 
-  @EventPattern('task.deleted')
-  onTaskDeleted(data: any) {
-    return this.service.handleTaskDeleted(data);
-  }
-
   @EventPattern('task.comment.created')
   onCommentCreated(data: any) {
     return this.service.handleCommentCreated(data);

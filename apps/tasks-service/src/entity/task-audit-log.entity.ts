@@ -3,12 +3,21 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  Index,
 } from 'typeorm';
+import { Task } from './task.entity';
 
 @Entity('task_audit_logs')
+@Index(['taskId', 'createdAt'])
 export class TaskAuditLog {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  @ManyToOne(() => Task, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'taskId' })
+  task!: Task;
 
   @Column('uuid')
   taskId!: string;
@@ -23,7 +32,7 @@ export class TaskAuditLog {
   after!: any;
 
   @Column({ nullable: true })
-  authorId!: string;
+  actorId!: string;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;

@@ -1,25 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { TaskAuditRepository } from './entity/repository/task-audit.repository';
+import { TaskAuditAction } from '@jungle/enums';
 
 @Injectable()
 export class TaskAuditService {
   constructor(private readonly repo: TaskAuditRepository) {}
 
   async log(
-    action: string,
+    action: TaskAuditAction,
     taskId: string,
     before: any,
     after: any,
-    authorId?: string,
+    actorId?: string,
   ) {
-    const record = {
+    return this.repo.create({
       action,
       taskId,
-      before: before ?? null,
-      after: after ?? null,
-      authorId: authorId ?? 'system',
-    };
-    return this.repo.create(record);
+      before,
+      after,
+      actorId: actorId ?? 'system',
+    });
   }
 
   async getByTask(taskId: string, limit = 5) {

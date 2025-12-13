@@ -1,5 +1,5 @@
 import { CreateCommentDto, UpdateTaskDto, CreateTaskDto } from '@jungle/dtos';
-import { CreateTaskCommand } from '@jungle/types';
+import { CreateTaskCommand, UpdateTaskCommand } from '@jungle/types';
 import {
   Controller,
   Get,
@@ -37,8 +37,13 @@ export class TasksController {
   }
 
   @Put(':id')
-  async updateTask(@Param('id') id: string, @Body() body: UpdateTaskDto) {
-    return this.tasksService.updateTask(id, body);
+  async updateTask(
+    @Param('id') id: string,
+    @Body() body: UpdateTaskDto,
+    @Req() req: any,
+  ) {
+    const payload: UpdateTaskCommand = { ...body, actorId: req.user.userId };
+    return this.tasksService.updateTask(id, payload);
   }
 
   @Delete(':id')
@@ -47,8 +52,15 @@ export class TasksController {
   }
 
   @Post(':id/comments')
-  async createComment(@Param('id') id: string, @Body() body: CreateCommentDto) {
-    return this.tasksService.createComment(id, body);
+  async createComment(
+    @Param('id') id: string,
+    @Body() body: CreateCommentDto,
+    @Req() req: any,
+  ) {
+    return this.tasksService.createComment(id, {
+      ...body,
+      authorId: req.user.userId,
+    });
   }
 
   @Get(':id/comments')
