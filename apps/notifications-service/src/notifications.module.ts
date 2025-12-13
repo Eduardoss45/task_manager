@@ -1,15 +1,38 @@
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
+import { Notification } from './entity/notifications.entity';
+import { NotificationRepository } from './entity/repository/notifications.repository';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
+    ConfigModule.forRoot({ isGlobal: true }),
+
+    ClientsModule.register([
+      {
+        name: 'GATEWAY_NOTIFICATIONS_CLIENT',
+        transport: Transport.RMQ,
+        options: {
+          urls: [process.env.RMQ_URL!],
+          queue: 'gateway_notifications_queue',
+          queueOptions: { durable: true },
+        },
+      },
+    ]),
+
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      url: process.env.DATABASE_URL,
+      autoLoadEntities: true,
+      synchronize: false,
     }),
+
+    TypeOrmModule.forFeature([Notification]),
   ],
   controllers: [NotificationsController],
-  providers: [NotificationsService],
+  providers: [NotificationsService, NotificationRepository],
 })
 export class NotificationsModule {}

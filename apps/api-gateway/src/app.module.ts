@@ -4,6 +4,7 @@ import { AuthModule } from './modules/auth-gateway/auth-gateway.module';
 import { TasksModule } from './modules/tasks-gateway/tasks-gateway.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { NotificationsModule } from './modules/notifications-gateway/notifications-gateway.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { APP_GUARD } from '@nestjs/core';
     }),
     AuthModule,
     TasksModule,
+    NotificationsModule,
   ],
   providers: [
     {

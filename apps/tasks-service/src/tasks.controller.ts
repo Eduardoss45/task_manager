@@ -24,7 +24,6 @@ export class TasksController {
 
   @MessagePattern({ cmd: 'updateTask' })
   updateTask(data: { id: string; updates: UpdateTaskDto }) {
-    console.log(data);
     return this.tasksService.updateTask(data.id, data.updates);
   }
 
