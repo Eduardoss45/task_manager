@@ -105,9 +105,14 @@ export class TasksService {
     );
 
     const payload = {
-      taskId: created.id,
-      after: JSON.parse(JSON.stringify(created)),
+      event: 'task.created',
       actorId: task.authorId,
+      task: {
+        id: created.id,
+        title: created.title,
+        ownerId: created.authorId,
+        assignedUserIds: created.assignedUserIds,
+      },
     };
 
     this.client
@@ -163,6 +168,8 @@ export class TasksService {
     await this.repo.updateTask(id, updatesEntity);
     const after = await this.repo.findTaskById(id);
 
+    if (!after) throw new NotFoundException('Task not found after update');
+
     const changes: Record<string, { before: any; after: any }> = {};
 
     for (const key of Object.keys(updatesEntity)) {
@@ -189,6 +196,35 @@ export class TasksService {
         ),
         actorId ?? 'system',
       );
+    }
+
+    const payload = {
+      event: 'task.updated',
+      actorId: actorId ?? 'system',
+      task: {
+        id: id,
+        ownerId: before.authorId,
+      },
+      before: {
+        status: before.status,
+        assignedUserIds: before.assignedUserIds,
+      },
+      after: {
+        status: after.status,
+        assignedUserIds: after.assignedUserIds,
+      },
+    };
+
+    if (Object.keys(changes).length > 0) {
+      this.client
+        .emit('task.updated', payload)
+        .pipe(
+          catchError((err) => {
+            this.logger.error('Failed to emit task.updated', err);
+            return of(null);
+          }),
+        )
+        .subscribe();
     }
 
     return after;
@@ -233,9 +269,17 @@ export class TasksService {
     );
 
     const payload = {
-      taskId,
-      comment: JSON.parse(JSON.stringify(createdComment)),
-      actorId: comment.authorId ?? 'system',
+      event: 'task.comment.created',
+      actorId: comment.authorId,
+      task: {
+        id: taskExists.id,
+        ownerId: taskExists.authorId,
+        assignedUserIds: taskExists.assignedUserIds,
+      },
+      comment: {
+        id: createdComment.id,
+        content: createdComment.content,
+      },
     };
 
     this.client
