@@ -1,32 +1,28 @@
 import { Module } from '@nestjs/common';
-import { TasksController } from './tasks.controller';
-import { AuthModule } from '../auth/auth.module';
-import { SecurityModule } from '../security/security.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthController } from './auth-gateway.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { TasksService } from './tasks.service';
+import { AuthService } from './auth-gateway.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     ClientsModule.registerAsync([
       {
-        name: 'TASKS_SERVICE',
+        name: 'AUTH_SERVICE',
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({
           transport: Transport.RMQ,
           options: {
             urls: [config.get<string>('RMQ_URL')!],
-            queue: 'tasks_queue',
+            queue: 'auth_queue',
             queueOptions: { durable: false },
           },
         }),
       },
     ]),
-    AuthModule,
-    SecurityModule,
   ],
-  providers: [TasksService],
-  controllers: [TasksController],
+  providers: [AuthService],
+  controllers: [AuthController],
 })
-export class TasksModule {}
+export class AuthModule {}

@@ -5,22 +5,11 @@ import {
   IsArray,
   ArrayNotEmpty,
   IsDateString,
+  IsUUID,
 } from "class-validator";
 import { Transform } from "class-transformer";
 
-export enum TaskPriority {
-  LOW = "LOW",
-  MEDIUM = "MEDIUM",
-  HIGH = "HIGH",
-  URGENT = "URGENT",
-}
-
-export enum TaskStatus {
-  TODO = "TODO",
-  IN_PROGRESS = "IN_PROGRESS",
-  REVIEW = "REVIEW",
-  DONE = "DONE",
-}
+import { TaskPriority, TaskStatus } from "@jungle/enums";
 
 export class CreateTaskDto {
   @Transform(({ value }) => value?.trim())
@@ -46,6 +35,6 @@ export class CreateTaskDto {
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
-  @Transform(({ value }) => (Array.isArray(value) ? value.map(v => v.trim()) : value))
-  assignees?: string[];
+  @IsUUID("4", { each: true })
+  assignedUserIds?: string[];
 }

@@ -4,13 +4,8 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { TasksRepository } from './entity/repository/tasks.repository';
-import {
-  CreateTaskDto,
-  UpdateTaskDto,
-  CreateCommentDto,
-  TaskPriority,
-  TaskStatus,
-} from '@jungle/dtos';
+import { CreateTaskDto, UpdateTaskDto, CreateCommentDto } from '@jungle/dtos';
+import { TaskPriority, TaskStatus } from '@jungle/enums';
 import { Task, Priority, Status } from './entity/task.entity';
 
 @Injectable()
@@ -36,7 +31,7 @@ export class TasksService {
   }
 
   async createTask(task: CreateTaskDto) {
-    const assignedUserIds = task.assignees ?? [];
+    const assignedUserIds = task.assignedUserIds ?? [];
 
     const duplicates = assignedUserIds.filter((v, i, a) => a.indexOf(v) !== i);
     if (duplicates.length > 0) {
@@ -71,7 +66,7 @@ export class TasksService {
       dueDate: this.normalizeDate(updates.dueDate),
       priority: this.mapPriority(updates.priority),
       status: this.mapStatus(updates.status),
-      assignedUserIds: updates.assignees ?? undefined,
+      assignedUserIds: updates.assignedUserIds ?? undefined,
     };
 
     if (updatesEntity.assignedUserIds) {

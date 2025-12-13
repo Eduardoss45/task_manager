@@ -13,7 +13,7 @@ export class TasksService {
     );
   }
 
-  async createTask(task: CreateTaskDto) {
+  async createTask(task: CreateTaskDto & { authorId: string }) {
     return firstValueFrom(this.client.send({ cmd: 'createTask' }, task));
   }
 

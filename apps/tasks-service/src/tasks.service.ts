@@ -1,3 +1,5 @@
+import { CreateTaskDto, UpdateTaskDto, CreateCommentDto } from '@jungle/dtos';
+import { TaskPriority, TaskStatus } from '@jungle/enums';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   Injectable,
@@ -7,14 +9,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { TasksRepository } from './entity/repository/tasks.repository';
-import {
-  CreateTaskDto,
-  UpdateTaskDto,
-  CreateCommentDto,
-  TaskPriority,
-  TaskStatus,
-} from '@jungle/dtos';
-import { Task, Priority, Status } from './entity/task.entity';
+import { Task } from './entity/task.entity';
 import { validate as isUUID } from 'uuid';
 import { TaskAuditService } from './task-audit.service';
 import { catchError, of } from 'rxjs';
@@ -39,10 +34,12 @@ export class TasksService {
     return date ? new Date(date) : undefined;
   }
 
-  private mapPriorityOrThrow(priority?: TaskPriority): Priority | undefined {
+  private mapPriorityOrThrow(
+    priority?: TaskPriority,
+  ): TaskPriority | undefined {
     if (!priority) return undefined;
 
-    const mapped = Priority[priority as keyof typeof Priority];
+    const mapped = TaskPriority[priority as keyof typeof TaskPriority];
     if (!mapped) {
       throw new BadRequestException(`Invalid priority value: ${priority}`);
     }
@@ -50,10 +47,10 @@ export class TasksService {
     return mapped;
   }
 
-  private mapStatusOrThrow(status?: TaskStatus): Status | undefined {
+  private mapStatusOrThrow(status?: TaskStatus): TaskStatus | undefined {
     if (!status) return undefined;
 
-    const mapped = Status[status as keyof typeof Status];
+    const mapped = TaskStatus[status as keyof typeof TaskStatus];
     if (!mapped) {
       throw new BadRequestException(`Invalid status value: ${status}`);
     }
@@ -75,11 +72,12 @@ export class TasksService {
   }
 
   async createTask(task: CreateTaskDto & { authorId?: string }) {
-    const assignedUserIds = task.assignees ?? [];
+    const assignedUserIds = task.assignedUserIds ?? [];
     this.assertNoDuplicates(assignedUserIds, 'Assigned users');
 
-    const priority = this.mapPriorityOrThrow(task.priority) ?? Priority.MEDIUM;
-    const status = this.mapStatusOrThrow(task.status) ?? Status.TODO;
+    const priority =
+      this.mapPriorityOrThrow(task.priority) ?? TaskPriority.MEDIUM;
+    const status = this.mapStatusOrThrow(task.status) ?? TaskStatus.TODO;
 
     const taskEntity: Partial<Task> = {
       ...task,
@@ -87,6 +85,7 @@ export class TasksService {
       priority,
       status,
       assignedUserIds,
+      authorId: task.authorId,
     };
 
     const created = await this.repo.createTask(taskEntity);
@@ -96,13 +95,13 @@ export class TasksService {
       created.id,
       null,
       created,
-      task.authorId ?? 'system',
+      task.authorId,
     );
 
     const payload = {
       taskId: created.id,
       after: JSON.parse(JSON.stringify(created)),
-      actorId: task.authorId ?? 'system',
+      actorId: task.authorId,
     };
 
     this.client
@@ -143,7 +142,7 @@ export class TasksService {
       dueDate: this.normalizeDate(updates.dueDate),
       priority: newPriority,
       status: newStatus,
-      assignedUserIds: updates.assignees ?? undefined,
+      assignedUserIds: updates.assignedUserIds ?? undefined,
     };
 
     if (updatesEntity.assignedUserIds) {

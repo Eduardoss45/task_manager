@@ -13,7 +13,7 @@ export class TasksController {
   }
 
   @MessagePattern({ cmd: 'createTask' })
-  createTask(task: CreateTaskDto) {
+  createTask(task: CreateTaskDto & { authorId: string }) {
     return this.tasksService.createTask(task);
   }
 

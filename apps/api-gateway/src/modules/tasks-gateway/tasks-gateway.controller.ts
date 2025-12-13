@@ -1,3 +1,5 @@
+import { CreateCommentDto, UpdateTaskDto, CreateTaskDto } from '@jungle/dtos';
+import { CreateTaskCommand } from '@jungle/types';
 import {
   Controller,
   Get,
@@ -6,12 +8,12 @@ import {
   Delete,
   Param,
   Body,
+  Req,
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { TasksService } from './tasks.service';
+import { TasksService } from './tasks-gateway.service';
 import { JwtAuthGuard } from '../security/jwt.guard';
-import { CreateCommentDto, UpdateTaskDto, CreateTaskDto } from '@jungle/dtos';
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
@@ -24,8 +26,9 @@ export class TasksController {
   }
 
   @Post()
-  async createTask(@Body() body: CreateTaskDto) {
-    return this.tasksService.createTask(body);
+  async createTask(@Body() body: CreateTaskDto, @Req() req: any) {
+    const payload: CreateTaskCommand = { ...body, authorId: req.user.userId };
+    return this.tasksService.createTask(payload);
   }
 
   @Get(':id')

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AuthModule } from './modules/auth/auth.module';
-import { TasksModule } from './modules/tasks/tasks.module';
+import { AuthModule } from './modules/auth-gateway/auth-gateway.module';
+import { TasksModule } from './modules/tasks-gateway/tasks-gateway.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
