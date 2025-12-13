@@ -29,10 +29,6 @@ export class AuthController {
   async register(@Body() body: RegisterDto, @Res() res: Response) {
     const result = await this.auth.register(body);
 
-    if ('error' in result) {
-      return res.status(400).json(result);
-    }
-
     this.setAuthCookies(res, result);
 
     return res.json({
@@ -44,10 +40,6 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: LoginDto, @Res() res: Response) {
     const result = await this.auth.login(body);
-
-    if ('error' in result) {
-      return res.status(400).json(result);
-    }
 
     this.setAuthCookies(res, result);
 

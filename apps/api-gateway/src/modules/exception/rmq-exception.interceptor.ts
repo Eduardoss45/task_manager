@@ -6,6 +6,7 @@ import {
   BadRequestException,
   NotFoundException,
   InternalServerErrorException,
+  ConflictException,
 } from '@nestjs/common';
 import { Observable, catchError, throwError } from 'rxjs';
 
@@ -45,6 +46,8 @@ export class RmqExceptionInterceptor implements NestInterceptor {
         return new BadRequestException(message);
       case 404:
         return new NotFoundException(message);
+      case 409:
+        return new ConflictException(message);
       default:
         return new InternalServerErrorException(message);
     }

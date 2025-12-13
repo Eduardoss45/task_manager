@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from './entity/repository/user.repository';
@@ -33,6 +38,15 @@ export class AuthService {
   }
 
   async register(data: RegisterDto) {
+    const exists = await this.users.findByEmail(data.email);
+
+    if (exists) {
+      throw new RpcException({
+        statusCode: 409,
+        message: 'Email already in use',
+      });
+    }
+
     const hashed = await bcrypt.hash(data.password, 10);
 
     const user = await this.users.createUser({
@@ -59,13 +73,21 @@ export class AuthService {
 
   async login(data: LoginDto) {
     const user = await this.users.findByEmail(data.email);
-    if (!user) return { error: 'User not found' };
+
+    if (!user) {
+      throw new RpcException({ statusCode: 404, message: 'User not found' });
+    }
 
     const valid = await bcrypt.compare(data.password, user.password);
-    if (!valid) return { error: 'Invalid credentials' };
+
+    if (!valid) {
+      throw new RpcException({
+        statusCode: 400,
+        message: 'Invalid credentials',
+      });
+    }
 
     const tokens = await this.generateTokens(user);
-
     const refreshHash = await bcrypt.hash(tokens.refreshToken, 10);
     await this.users.updateRefreshToken(user.id, refreshHash);
 
@@ -84,13 +106,16 @@ export class AuthService {
       const payload = this.jwtService.verify<{ sub: string }>(refreshToken);
 
       const user = await this.users.findById(payload.sub);
+
       if (!user || !user.refreshTokenHash) {
-        throw new Error('Access denied');
+        throw new UnauthorizedException('Access denied');
       }
 
       const valid = await bcrypt.compare(refreshToken, user.refreshTokenHash);
 
-      if (!valid) throw new Error('Invalid refresh token');
+      if (!valid) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
 
       const tokens = await this.generateTokens({
         id: user.id,
@@ -102,8 +127,12 @@ export class AuthService {
       await this.users.updateRefreshToken(user.id, newRefreshHash);
 
       return tokens;
-    } catch {
-      return { error: 'Invalid token' };
+    } catch (err) {
+      if (err instanceof UnauthorizedException) {
+        throw err;
+      }
+
+      throw new UnauthorizedException('Invalid token');
     }
   }
 }
