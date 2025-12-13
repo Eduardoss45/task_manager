@@ -126,7 +126,9 @@ export class TasksService {
       throw new NotFoundException('Task not found');
     }
 
-    return task;
+    const audit = await this.audit.getByTask(id, 5);
+
+    return { ...task, audit };
   }
 
   async updateTask(id: string, updates: UpdateTaskDto & { authorId?: string }) {

@@ -3,7 +3,6 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('task_audit_logs')
@@ -28,7 +27,4 @@ export class TaskAuditLog {
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
-
-  @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt!: Date;
 }

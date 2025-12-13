@@ -22,7 +22,7 @@ export class TaskAuditService {
     return this.repo.create(record);
   }
 
-  async getByTask(taskId: string, limit = 50) {
+  async getByTask(taskId: string, limit = 5) {
     return this.repo.findByTask(taskId, limit);
   }
 }

@@ -4,7 +4,6 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { Task } from './task.entity';
 
@@ -24,7 +23,4 @@ export class Comment {
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
-
-  @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt!: Date;
 }
