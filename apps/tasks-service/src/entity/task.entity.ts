@@ -1,48 +1,56 @@
-  import {
-    Entity,
-    Column,
-    PrimaryGeneratedColumn,
-    OneToMany,
-  } from 'typeorm';
-  import { Comment } from './comment.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Comment } from './comment.entity';
 
-  export enum Priority {
-    LOW = 'LOW',
-    MEDIUM = 'MEDIUM',
-    HIGH = 'HIGH',
-    URGENT = 'URGENT',
-  }
+export enum Priority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  URGENT = 'URGENT',
+}
 
-  export enum Status {
-    TODO = 'TODO',
-    IN_PROGRESS = 'IN_PROGRESS',
-    REVIEW = 'REVIEW',
-    DONE = 'DONE',
-  }
+export enum Status {
+  TODO = 'TODO',
+  IN_PROGRESS = 'IN_PROGRESS',
+  REVIEW = 'REVIEW',
+  DONE = 'DONE',
+}
 
-  @Entity('tasks')
-  export class Task {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string;
+@Entity('tasks')
+export class Task {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
-    @Column()
-    title!: string;
+  @Column()
+  title!: string;
 
-    @Column()
-    description!: string;
+  @Column('uuid')
+  authorId!: string;
 
-    @Column({ type: 'timestamp' })
-    dueDate!: Date;
+  @Column({ nullable: true })
+  description?: string;
 
-    @Column({ type: 'enum', enum: Priority, default: Priority.LOW })
-    priority!: Priority;
+  @Column({ type: 'timestamp' })
+  dueDate!: Date;
 
-    @Column({ type: 'enum', enum: Status, default: Status.TODO })
-    status!: Status;
+  @Column({ type: 'enum', enum: Priority, default: Priority.LOW })
+  priority!: Priority;
 
-    @Column('uuid', { array: true, default: [] })
-    assignedUserIds!: string[];
+  @Column({ type: 'enum', enum: Status, default: Status.TODO })
+  status!: Status;
 
-    @OneToMany(() => Comment, (comment) => comment.task)
-    comments!: Comment[];
-  }
+  @Column('uuid', { array: true, default: [] })
+  assignedUserIds!: string[];
+
+  @OneToMany(() => Comment, (comment) => comment.task)
+  comments!: Comment[];
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt!: Date;
+
+  @Column({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt!: Date;
+}

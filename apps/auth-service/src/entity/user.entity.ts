@@ -8,9 +8,22 @@ export class User {
   @Column({ unique: true })
   email!: string;
 
-  @Column()
+  @Column({ unique: true })
   username!: string;
 
   @Column()
   password!: string;
+
+  @Column({ default: true })
+  isActive!: boolean;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt!: Date;
+
+  @Column({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt!: Date;
 }

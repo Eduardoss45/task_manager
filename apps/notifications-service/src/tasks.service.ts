@@ -50,7 +50,7 @@ export class TasksService {
       dueDate: this.normalizeDate(task.dueDate),
       priority: this.mapPriority(task.priority) ?? Priority.MEDIUM,
       status: this.mapStatus(task.status) ?? Status.TODO,
-      assignedUserIds, // aqui já é garantido que não é undefined
+      assignedUserIds,
     };
 
     return this.repo.createTask(taskEntity);

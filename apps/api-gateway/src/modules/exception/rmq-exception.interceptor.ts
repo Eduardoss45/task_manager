@@ -15,21 +15,38 @@ export class RmqExceptionInterceptor implements NestInterceptor {
     return next.handle().pipe(
       catchError((err) => {
         if (err?.statusCode && err?.message) {
-          switch (err.statusCode) {
-            case 400:
-              return throwError(() => new BadRequestException(err.message));
-            case 404:
-              return throwError(() => new NotFoundException(err.message));
-          }
+          return throwError(() =>
+            this.mapException(err.statusCode, err.message),
+          );
+        }
+
+        if (err?.response?.statusCode && err?.response?.message) {
+          return throwError(() =>
+            this.mapException(err.response.statusCode, err.response.message),
+          );
+        }
+
+        if (typeof err?.message === 'string') {
+          return throwError(
+            () => new InternalServerErrorException(err.message),
+          );
         }
 
         return throwError(
-          () =>
-            new InternalServerErrorException(
-              err?.message || 'Unexpected RPC error',
-            ),
+          () => new InternalServerErrorException('Unexpected RPC error'),
         );
       }),
     );
+  }
+
+  private mapException(statusCode: number, message: string) {
+    switch (statusCode) {
+      case 400:
+        return new BadRequestException(message);
+      case 404:
+        return new NotFoundException(message);
+      default:
+        return new InternalServerErrorException(message);
+    }
   }
 }

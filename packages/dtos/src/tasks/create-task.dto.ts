@@ -46,6 +46,6 @@ export class CreateTaskDto {
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
-  @Transform(({ value }) => value.map((v: string) => v.trim()))
+  @Transform(({ value }) => (Array.isArray(value) ? value.map(v => v.trim()) : value))
   assignees?: string[];
 }

@@ -9,7 +9,7 @@ export class Comment {
   @Column()
   content!: string;
 
-  @Column()
+  @Column('uuid')
   authorId!: string;
 
   @ManyToOne(() => Task, (task) => task.comments, { onDelete: 'CASCADE' })
