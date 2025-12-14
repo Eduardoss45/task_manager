@@ -15,21 +15,17 @@
         "!dist/**/*.map"
       ]
     },
-    "check-types": {
-      "dependsOn": [
-        "^check-types"
-      ]
-    },
-    "lint": {
-      "dependsOn": [
-        "^lint"
-      ]
+    "db:migrate": {
+      "cache": false,
+      "outputs": []
     },
     "dev": {
       "cache": false,
       "persistent": true,
-      "outputs": [],
-      "dependsOn": []
+      "dependsOn": [
+        "db:migrate"
+      ],
+      "outputs": []
     }
   }
 }

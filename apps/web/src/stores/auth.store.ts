@@ -34,6 +34,7 @@ export const useAuthStore = create<AuthState>(set => {
           accessToken: res.accessToken,
           loading: false,
         });
+        console.log(res);
       } catch (e: any) {
         set({ error: e.message, loading: false });
         throw e;
