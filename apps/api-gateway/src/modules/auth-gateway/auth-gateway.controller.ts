@@ -1,8 +1,10 @@
 import { Controller, Post, Body, Req, Res } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth-gateway.service';
 import { LoginDto, RegisterDto } from '@jungle/dtos';
 import { Response, Request } from 'express';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
@@ -26,6 +28,10 @@ export class AuthController {
   }
 
   @Post('register')
+  @ApiOperation({ summary: 'Registro de novo usuário' })
+  @ApiBody({ type: RegisterDto })
+  @ApiResponse({ status: 201, description: 'Usuário criado com sucesso' })
+  @ApiResponse({ status: 400, description: 'Dados inválidos' })
   async register(@Body() body: RegisterDto, @Res() res: Response) {
     const result = await this.auth.register(body);
 
@@ -38,6 +44,10 @@ export class AuthController {
   }
 
   @Post('login')
+  @ApiOperation({ summary: 'Login do usuário' })
+  @ApiBody({ type: LoginDto })
+  @ApiResponse({ status: 200, description: 'Login realizado com sucesso' })
+  @ApiResponse({ status: 401, description: 'Credenciais inválidas' })
   async login(@Body() body: LoginDto, @Res() res: Response) {
     const result = await this.auth.login(body);
 
@@ -49,6 +59,12 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @ApiOperation({ summary: 'Renova o access token usando refresh token' })
+  @ApiResponse({ status: 200, description: 'Tokens renovados' })
+  @ApiResponse({
+    status: 401,
+    description: 'Refresh token inválido ou ausente',
+  })
   async refresh(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies.refreshToken;
 

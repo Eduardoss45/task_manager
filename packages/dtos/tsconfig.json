@@ -8,7 +8,8 @@
     "moduleResolution": "Node",
     "outDir": "dist",
     "declaration": true,
-    "strict": true
+    "strict": true,
+    "plugins": [{ "name": "@nestjs/swagger/plugin" }]
   },
   "include": ["src"]
 }

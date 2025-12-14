@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -5,6 +7,14 @@ import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { RmqExceptionInterceptor } from './modules/exception/rmq-exception.interceptor';
 import { Transport } from '@nestjs/microservices';
+
+import {
+  LoginDto,
+  RegisterDto,
+  CreateTaskDto,
+  UpdateTaskDto,
+  CreateCommentDto,
+} from '@jungle/dtos';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -30,8 +40,20 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  const documentFactory = () =>
+    SwaggerModule.createDocument(app, config, {
+      extraModels: [
+        LoginDto,
+        RegisterDto,
+        CreateTaskDto,
+        UpdateTaskDto,
+        CreateCommentDto,
+      ],
+    });
+
+  SwaggerModule.setup('api/docs', app, documentFactory, {
+    jsonDocumentUrl: 'api/docs-json',
+  });
 
   app.connectMicroservice({
     transport: Transport.RMQ,
@@ -43,7 +65,7 @@ async function bootstrap() {
   });
 
   await app.startAllMicroservices();
-
   await app.listen(process.env.PORT || 3000);
 }
+
 bootstrap();

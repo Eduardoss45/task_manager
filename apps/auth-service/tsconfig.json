@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "module": "CommonJS", // mais simples para NestJS
+    "module": "CommonJS",
     "moduleResolution": "node",
     "target": "ES2023",
-    "rootDir": "src", // aponta para src
-    "outDir": "dist", // arquivos compilados vão para dist
+    "rootDir": "src", 
+    "outDir": "dist",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
