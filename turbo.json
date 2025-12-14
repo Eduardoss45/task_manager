@@ -15,16 +15,17 @@
         "!dist/**/*.map"
       ]
     },
-    "db:migrate": {
+    "migration:run": {
+      "cache": false,
+      "outputs": []
+    },
+    "migration:generate": {
       "cache": false,
       "outputs": []
     },
     "dev": {
       "cache": false,
       "persistent": true,
-      "dependsOn": [
-        "db:migrate"
-      ],
       "outputs": []
     }
   }

@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "@/lib/validators/auth";
 import type { RegisterFormData } from "@/lib/validators/auth";
-import { useAuthStore } from "@/stores/auth.store";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { AuthSkeleton } from "./AuthSkeleton";
 
 export function RegisterForm() {
-  const { register: registerUser, loading } = useAuthStore();
+  const { register, loading } = useAuth();
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -18,10 +18,10 @@ export function RegisterForm() {
 
   async function onSubmit(data: RegisterFormData) {
     try {
-      await registerUser(data.email, data.username, data.password);
+      await register(data.email, data.username, data.password);
       toast.success("Conta criada com sucesso");
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(e.message ?? "Erro ao criar conta");
     }
   }
 
@@ -32,6 +32,7 @@ export function RegisterForm() {
       <div>
         <Label>Email</Label>
         <Input {...form.register("email")} />
+        <p className="text-sm text-red-500">{form.formState.errors.email?.message}</p>
       </div>
 
       <div>
@@ -43,6 +44,7 @@ export function RegisterForm() {
       <div>
         <Label>Senha</Label>
         <Input type="password" {...form.register("password")} />
+        <p className="text-sm text-red-500">{form.formState.errors.password?.message}</p>
       </div>
 
       <div>

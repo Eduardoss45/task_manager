@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "@/lib/validators/auth";
 import type { LoginFormData } from "@/lib/validators/auth";
-import { useAuthStore } from "@/stores/auth.store";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { AuthSkeleton } from "./AuthSkeleton";
 
 export function LoginForm() {
-  const { login, loading } = useAuthStore();
+  const { login, loading } = useAuth();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -21,7 +21,7 @@ export function LoginForm() {
       await login(data.email, data.password);
       toast.success("Login realizado com sucesso");
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(e.message ?? "Erro ao realizar login");
     }
   }
 
