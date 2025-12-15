@@ -1,0 +1,90 @@
+import { useCallback, useState, useRef } from "react";
+import { toast } from "sonner";
+import { api } from "@/services/api";
+import type { Task } from "@/types/task";
+
+export function useTaskManager() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchTasks = useCallback(async (page = 1, size = 10) => {
+    if (page <= 0 || size <= 0) return;
+
+    try {
+      setLoading(true);
+      const res = await api.get(`api/tasks?page=${page}&size=${size}`, {
+        withCredentials: true,
+      });
+      setTasks(res.data.items ?? res.data);
+    } catch (err: any) {
+      setError(err.message);
+      toast.error("Erro ao carregar tasks");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const taskCache = useRef<Record<string, Task>>({});
+
+  const getTask = useCallback(async (id: string) => {
+    if (taskCache.current[id]) return taskCache.current[id];
+
+    const res = await api.get(`api/tasks/${id}`, { withCredentials: true });
+    taskCache.current[id] = res.data;
+    return res.data;
+  }, []);
+
+  const createTask = async (data: Partial<Task>) => {
+    try {
+      const res = await api.post("api/tasks", data, { withCredentials: true });
+      toast.success("Task criada com sucesso");
+      return res.data;
+    } catch {
+      toast.error("Erro ao criar task");
+    }
+  };
+
+  const updateTask = async (id: string, data: Partial<Task>) => {
+    try {
+      await api.put(`api/tasks/${id}`, data, { withCredentials: true });
+      toast.success("Task atualizada");
+    } catch {
+      toast.error("Erro ao atualizar task");
+    }
+  };
+
+  const deleteTask = async (id: string) => {
+    try {
+      await api.delete(`api/tasks/${id}`, { withCredentials: true });
+      toast.success("Task removida");
+    } catch {
+      toast.error("Erro ao remover task");
+    }
+  };
+
+  const addComment = async (taskId: string, content: string) => {
+    await api.post(`api/tasks/${taskId}/comments`, { content }, { withCredentials: true });
+    toast.success("Comentário adicionado");
+  };
+
+  const getComments = async (taskId: string, page = 1, size = 10) => {
+    const res = await api.get(`api/tasks/${taskId}/comments?page=${page}&size=${size}`, {
+      withCredentials: true,
+    });
+    return res.data;
+  };
+
+  return {
+    tasks,
+    loading,
+    error,
+    fetchTasks,
+    getTask,
+    createTask,
+    updateTask,
+    deleteTask,
+    addComment,
+    getComments,
+  };
+}

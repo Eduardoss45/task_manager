@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { User } from '../user.entity';
 
 @Injectable()
@@ -25,5 +25,12 @@ export class UserRepository {
 
   updateRefreshToken(userId: string, hash: string | null) {
     return this.repo.update(userId, { refreshTokenHash: hash ?? undefined });
+  }
+
+  async findAvailableUsers(excludeUserId: string) {
+    return this.repo.find({
+      where: { id: Not(excludeUserId) },
+      select: ['id', 'username'],
+    });
   }
 }

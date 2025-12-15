@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -15,6 +11,15 @@ export class AuthService {
     private readonly users: UserRepository,
     private readonly jwtService: JwtService,
   ) {}
+
+  private async getAvailableUsers(userId: string) {
+    const users = await this.users.findAvailableUsers(userId);
+
+    return users.map((u) => ({
+      userId: u.id,
+      username: u.username,
+    }));
+  }
 
   private async generateTokens(user: {
     id: string;
@@ -91,12 +96,15 @@ export class AuthService {
     const refreshHash = await bcrypt.hash(tokens.refreshToken, 10);
     await this.users.updateRefreshToken(user.id, refreshHash);
 
+    const availableUsers = await this.getAvailableUsers(user.id);
+
     return {
       user: {
         id: user.id,
         email: user.email,
         username: user.username,
       },
+      availableUsers,
       ...tokens,
     };
   }
@@ -126,15 +134,18 @@ export class AuthService {
       const newRefreshHash = await bcrypt.hash(tokens.refreshToken, 10);
       await this.users.updateRefreshToken(user.id, newRefreshHash);
 
+      const availableUsers = await this.getAvailableUsers(user.id);
+
       return {
         user: {
           id: user.id,
           email: user.email,
           username: user.username,
         },
+        availableUsers,
         ...tokens,
       };
-    } catch (err) {
+    } catch {
       throw new UnauthorizedException('Invalid token');
     }
   }

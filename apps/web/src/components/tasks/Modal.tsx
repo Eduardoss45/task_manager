@@ -1,16 +1,11 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
-export const Route = createLazyFileRoute("/")({
-  component: AuthPage,
-});
-
-function AuthPage() {
+export function Modal() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/40">
+    <>
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader>
           <CardTitle>Autenticação</CardTitle>
@@ -30,6 +25,6 @@ function AuthPage() {
           </Tabs>
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 }

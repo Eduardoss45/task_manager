@@ -9,7 +9,13 @@ import { Response, Request } from 'express';
 export class AuthGatewayController {
   constructor(private readonly auth: AuthGatewayService) {}
 
-  private setAuthCookies(res: Response, tokens: any) {
+  private setAuthCookies(
+    res: Response,
+    tokens: {
+      accessToken: string;
+      refreshToken: string;
+    },
+  ) {
     res.cookie('accessToken', tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -30,24 +36,48 @@ export class AuthGatewayController {
   @Post('register')
   @ApiOperation({ summary: 'Registro de novo usuário' })
   @ApiBody({ type: RegisterDto })
-  @ApiResponse({ status: 201, description: 'Usuário criado com sucesso' })
-  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({
+    status: 201,
+    description: 'Usuário criado com sucesso',
+    schema: {
+      example: {
+        user: {
+          id: 'uuid',
+          email: 'edu@test.com',
+          username: 'edu',
+        },
+        availableUsers: [],
+      },
+    },
+  })
   async register(@Body() body: RegisterDto, @Res() res: Response) {
     const result = await this.auth.register(body);
 
     this.setAuthCookies(res, result);
 
-    return res.json({
-      status: 'created',
+    return res.status(201).json({
       user: result.user,
+      availableUsers: result.availableUsers ?? [],
     });
   }
 
   @Post('login')
   @ApiOperation({ summary: 'Login do usuário' })
   @ApiBody({ type: LoginDto })
-  @ApiResponse({ status: 200, description: 'Login realizado com sucesso' })
-  @ApiResponse({ status: 401, description: 'Credenciais inválidas' })
+  @ApiResponse({
+    status: 200,
+    description: 'Login realizado com sucesso',
+    schema: {
+      example: {
+        user: {
+          id: 'uuid',
+          email: 'edu@test.com',
+          username: 'edu',
+        },
+        availableUsers: [{ userId: 'uuid', username: 'jose' }],
+      },
+    },
+  })
   async login(@Body() body: LoginDto, @Res() res: Response) {
     const result = await this.auth.login(body);
 
@@ -55,12 +85,26 @@ export class AuthGatewayController {
 
     return res.json({
       user: result.user,
+      availableUsers: result.availableUsers,
     });
   }
 
   @Post('refresh')
   @ApiOperation({ summary: 'Renova o access token usando refresh token' })
-  @ApiResponse({ status: 200, description: 'Tokens renovados' })
+  @ApiResponse({
+    status: 200,
+    description: 'Tokens renovados',
+    schema: {
+      example: {
+        user: {
+          id: 'uuid',
+          email: 'edu@test.com',
+          username: 'edu',
+        },
+        availableUsers: [{ userId: 'uuid', username: 'jose' }],
+      },
+    },
+  })
   @ApiResponse({
     status: 401,
     description: 'Refresh token inválido ou ausente',
@@ -74,14 +118,11 @@ export class AuthGatewayController {
 
     const result = await this.auth.refresh(refreshToken);
 
-    if ('error' in result) {
-      return res.status(401).json(result);
-    }
-
     this.setAuthCookies(res, result);
 
     return res.json({
       user: result.user,
+      availableUsers: result.availableUsers,
     });
   }
 }
