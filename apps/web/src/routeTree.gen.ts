@@ -8,32 +8,35 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TasksRouteImport } from './routes/tasks'
-import { Route as IndexRouteImport } from './routes/index'
+
+const IndexLazyRouteImport = createFileRoute('/')()
 
 const TasksRoute = TasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const IndexLazyRoute = IndexLazyRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof IndexLazyRoute
   '/tasks': typeof TasksRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof IndexLazyRoute
   '/tasks': typeof TasksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/': typeof IndexLazyRoute
   '/tasks': typeof TasksRoute
 }
 export interface FileRouteTypes {
@@ -45,7 +48,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  IndexLazyRoute: typeof IndexLazyRoute
   TasksRoute: typeof TasksRoute
 }
 
@@ -62,14 +65,14 @@ declare module '@tanstack/react-router' {
       id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof IndexLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  IndexLazyRoute: IndexLazyRoute,
   TasksRoute: TasksRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
-export const Route = createFileRoute("/")({
+export const Route = createLazyFileRoute("/")({
   component: AuthPage,
 });
 
