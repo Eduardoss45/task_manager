@@ -1,19 +1,19 @@
 import { Controller, Post, Body, Req, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { AuthService } from './auth-gateway.service';
+import { AuthGatewayService } from './auth-gateway.service';
 import { LoginDto, RegisterDto } from '@jungle/dtos';
 import { Response, Request } from 'express';
 
 @ApiTags('Auth')
 @Controller('auth')
-export class AuthController {
-  constructor(private readonly auth: AuthService) {}
+export class AuthGatewayController {
+  constructor(private readonly auth: AuthGatewayService) {}
 
   private setAuthCookies(res: Response, tokens: any) {
     res.cookie('accessToken', tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      sameSite: 'lax',
       maxAge: 15 * 60 * 1000,
       path: '/',
     });
@@ -21,7 +21,7 @@ export class AuthController {
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/api/auth/refresh',
     });
@@ -80,6 +80,8 @@ export class AuthController {
 
     this.setAuthCookies(res, result);
 
-    return res.json({ status: 'refreshed' });
+    return res.json({
+      user: result.user,
+    });
   }
 }

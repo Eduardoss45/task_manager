@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { LoginDto, RegisterDto } from '@jungle/dtos';
 
 @Injectable()
-export class AuthService {
+export class AuthGatewayService {
   constructor(@Inject('AUTH_SERVICE') private client: ClientProxy) {}
 
   async login(data: LoginDto) {

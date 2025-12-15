@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from './auth-gateway.controller';
+import { AuthGatewayController } from './auth-gateway.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { AuthService } from './auth-gateway.service';
+import { AuthGatewayService } from './auth-gateway.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
@@ -22,7 +22,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       },
     ]),
   ],
-  providers: [AuthService],
-  controllers: [AuthController],
+  providers: [AuthGatewayService],
+  controllers: [AuthGatewayController],
 })
 export class AuthModule {}
