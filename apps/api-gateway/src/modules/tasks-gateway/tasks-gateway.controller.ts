@@ -27,8 +27,8 @@ import { JwtAuthGuard } from '../security/jwt.guard';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('tasks')
-export class TasksController {
-  constructor(private readonly tasksService: TasksService) {}
+export class TasksGatewayController {
+  constructor(private readonly tasksService: TasksGatewayService) {}
 
   @Get()
   @ApiOperation({ summary: 'Lista tarefas com paginação' })
@@ -46,6 +46,7 @@ export class TasksController {
     const payload: CreateTaskCommand = {
       ...body,
       authorId: req.user.userId,
+      authorName: req.user.username,
     };
     return this.tasksService.createTask(payload);
   }
@@ -95,6 +96,7 @@ export class TasksController {
     return this.tasksService.createComment(id, {
       ...body,
       authorId: req.user.userId,
+      authorName: req.user.username,
     });
   }
 
