@@ -20,7 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { CreateCommentDto, UpdateTaskDto, CreateTaskDto } from '@jungle/dtos';
 import { CreateTaskCommand, UpdateTaskCommand } from '@jungle/types';
-import { TasksService } from './tasks-gateway.service';
+import { TasksGatewayService } from './tasks-gateway.service';
 import { JwtAuthGuard } from '../security/jwt.guard';
 
 @ApiTags('Tasks')
