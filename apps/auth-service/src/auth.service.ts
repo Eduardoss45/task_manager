@@ -126,12 +126,15 @@ export class AuthService {
       const newRefreshHash = await bcrypt.hash(tokens.refreshToken, 10);
       await this.users.updateRefreshToken(user.id, newRefreshHash);
 
-      return tokens;
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+        },
+        ...tokens,
+      };
     } catch (err) {
-      if (err instanceof UnauthorizedException) {
-        throw err;
-      }
-
       throw new UnauthorizedException('Invalid token');
     }
   }
