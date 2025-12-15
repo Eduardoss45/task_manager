@@ -21,6 +21,9 @@ export class Task {
   @Column('uuid')
   authorId!: string;
 
+  @Column()
+  authorName!: string;
+
   @Column({ nullable: true })
   description?: string;
 
@@ -33,8 +36,11 @@ export class Task {
   @Column({ type: 'enum', enum: TaskStatus, default: TaskStatus.TODO })
   status!: TaskStatus;
 
-  @Column('uuid', { array: true, default: [] })
-  assignedUserIds!: string[];
+  @Column('jsonb', { default: [] })
+  assignedUserIds!: {
+    username: string;
+    userId: string;
+  }[];
 
   @OneToMany(() => Comment, (comment) => comment.task)
   comments!: Comment[];

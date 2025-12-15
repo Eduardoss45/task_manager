@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TasksController } from './tasks-gateway.controller';
+import { TasksGatewayController } from './tasks-gateway.controller';
 import { AuthModule } from '../auth-gateway/auth-gateway.module';
 import { SecurityModule } from '../security/security.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { TasksService } from './tasks-gateway.service';
+import { TasksGatewayService } from './tasks-gateway.service';
 
 @Module({
   imports: [
@@ -26,7 +26,7 @@ import { TasksService } from './tasks-gateway.service';
     AuthModule,
     SecurityModule,
   ],
-  providers: [TasksService],
-  controllers: [TasksController],
+  providers: [TasksGatewayService],
+  controllers: [TasksGatewayController],
 })
 export class TasksModule {}

@@ -9,4 +9,8 @@ export class CreateCommentDto {
   @IsString()
   @IsOptional()
   authorId?: string;
+
+  @IsString()
+  @IsOptional()
+  authorName?: string;
 }

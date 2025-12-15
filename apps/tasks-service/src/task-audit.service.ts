@@ -12,6 +12,7 @@ export class TaskAuditService {
     before: any,
     after: any,
     actorId?: string,
+    actorName?: string,
   ) {
     return this.repo.create({
       action,
@@ -19,6 +20,7 @@ export class TaskAuditService {
       before,
       after,
       actorId: actorId ?? 'system',
+      actorName: actorName ?? 'system',
     });
   }
 

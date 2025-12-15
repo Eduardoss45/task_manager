@@ -18,6 +18,9 @@ export class Comment {
   @Column('uuid')
   authorId!: string;
 
+  @Column()
+  authorName!: string;
+
   @ManyToOne(() => Task, (task) => task.comments, { onDelete: 'CASCADE' })
   task!: Task;
 

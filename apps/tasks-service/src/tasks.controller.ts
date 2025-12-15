@@ -13,7 +13,7 @@ export class TasksController {
   }
 
   @MessagePattern({ cmd: 'createTask' })
-  createTask(task: CreateTaskDto & { authorId: string }) {
+  createTask(task: CreateTaskDto & { authorId: string; authorName: string }) {
     return this.tasksService.createTask(task);
   }
 
@@ -33,7 +33,11 @@ export class TasksController {
   }
 
   @MessagePattern({ cmd: 'createComment' })
-  createComment(data: { taskId: string; comment: CreateCommentDto }) {
+  createComment(data: {
+    taskId: string;
+    authorName: string;
+    comment: CreateCommentDto;
+  }) {
     return this.tasksService.createComment(data.taskId, data.comment);
   }
 

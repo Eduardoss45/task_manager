@@ -34,6 +34,9 @@ export class TaskAuditLog {
   @Column({ nullable: true })
   actorId!: string;
 
+  @Column({ nullable: true })
+  actorName!: string;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 }

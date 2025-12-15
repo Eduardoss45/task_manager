@@ -4,12 +4,14 @@ import {
   IsOptional,
   IsEnum,
   IsArray,
+  ValidateNested,
   ArrayNotEmpty,
   IsDateString,
-  IsUUID,
 } from "class-validator";
 import { Transform } from "class-transformer";
 import { TaskPriority, TaskStatus } from "@jungle/enums";
+import { AssignedUserDto } from "./assigned-user.dto";
+import { Type } from "class-transformer";
 
 export class CreateTaskDto {
   @ApiProperty({ example: "Estudar NestJS" })
@@ -47,12 +49,16 @@ export class CreateTaskDto {
   status?: TaskStatus;
 
   @ApiPropertyOptional({
-    type: [String],
-    example: ["uuid-user-1", "uuid-user-2"],
+    type: [AssignedUserDto],
+    example: [
+      { username: "john_doe", userId: "uuid-user-1" },
+      { username: "jane_doe", userId: "uuid-user-2" },
+    ],
   })
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
-  @IsUUID("4", { each: true })
-  assignedUserIds?: string[];
+  @ValidateNested({ each: true })
+  @Type(() => AssignedUserDto)
+  assignedUserIds?: AssignedUserDto[];
 }

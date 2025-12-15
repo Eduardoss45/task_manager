@@ -1,4 +1,9 @@
-import { CreateTaskDto, UpdateTaskDto, CreateCommentDto } from '@jungle/dtos';
+import {
+  CreateTaskDto,
+  UpdateTaskDto,
+  CreateCommentDto,
+  AssignedUserDto,
+} from '@jungle/dtos';
 import { TaskPriority, TaskStatus, TaskAuditAction } from '@jungle/enums';
 import { ClientProxy } from '@nestjs/microservices';
 import {
@@ -67,13 +72,32 @@ export class TasksService {
     }
   }
 
+  private validateAssignedUserIds(assignedUserIds: AssignedUserDto[]) {
+    for (const user of assignedUserIds) {
+      if (!user.username || !user.userId) {
+        throw new BadRequestException(
+          'Assigned user must have both username and userId',
+        );
+      }
+
+      this.assertUUID(user.userId, 'Assigned user userId');
+    }
+  }
+
   async getTasks(page: number, size: number) {
     return this.repo.findTasks(page, size);
   }
 
-  async createTask(task: CreateTaskDto & { authorId?: string }) {
+  async createTask(
+    task: CreateTaskDto & { authorId?: string; authorName?: string },
+  ) {
     const assignedUserIds = task.assignedUserIds ?? [];
-    this.assertNoDuplicates(assignedUserIds, 'Assigned users');
+
+    this.validateAssignedUserIds(assignedUserIds);
+    this.assertNoDuplicates(
+      assignedUserIds.map((u) => u.userId),
+      'Assigned users',
+    );
 
     const priority =
       this.mapPriorityOrThrow(task.priority) ?? TaskPriority.MEDIUM;
@@ -86,6 +110,7 @@ export class TasksService {
       status,
       assignedUserIds,
       authorId: task.authorId,
+      authorName: task.authorName,
     };
 
     const created = await this.repo.createTask(taskEntity);
@@ -102,6 +127,7 @@ export class TasksService {
         dueDate: created.dueDate,
       },
       task.authorId,
+      task.authorName,
     );
 
     const payload = {
@@ -111,6 +137,7 @@ export class TasksService {
         id: created.id,
         title: created.title,
         ownerId: created.authorId,
+        ownerName: created.authorName,
         assignedUserIds: created.assignedUserIds,
       },
     };
@@ -142,27 +169,31 @@ export class TasksService {
     return { ...task, audit };
   }
 
-  async updateTask(id: string, updates: UpdateTaskDto & { actorId?: string }) {
+  async updateTask(
+    id: string,
+    updates: UpdateTaskDto & { actorId?: string; actorName?: string },
+  ) {
     this.assertUUID(id, 'Task ID');
 
     const before = await this.repo.findTaskById(id);
     if (!before) throw new NotFoundException('Task not found');
 
-    const { actorId, ...taskUpdates } = updates;
-
-    const newPriority = this.mapPriorityOrThrow(taskUpdates.priority);
-    const newStatus = this.mapStatusOrThrow(taskUpdates.status);
+    const { actorId, actorName, ...taskUpdates } = updates;
 
     const updatesEntity: Partial<Task> = {
       ...taskUpdates,
       dueDate: this.normalizeDate(taskUpdates.dueDate),
-      priority: newPriority,
-      status: newStatus,
+      priority: this.mapPriorityOrThrow(taskUpdates.priority),
+      status: this.mapStatusOrThrow(taskUpdates.status),
       assignedUserIds: taskUpdates.assignedUserIds ?? undefined,
     };
 
-    if (updatesEntity.assignedUserIds) {
-      this.assertNoDuplicates(updatesEntity.assignedUserIds, 'Assigned users');
+    if (updatesEntity.assignedUserIds !== undefined) {
+      this.validateAssignedUserIds(updatesEntity.assignedUserIds);
+      this.assertNoDuplicates(
+        updatesEntity.assignedUserIds.map((u) => u.userId),
+        'Assigned users',
+      );
     }
 
     await this.repo.updateTask(id, updatesEntity);
@@ -195,27 +226,28 @@ export class TasksService {
           Object.entries(changes).map(([k, v]) => [k, v.after]),
         ),
         actorId ?? 'system',
+        actorName ?? 'system',
       );
-    }
 
-    const payload = {
-      event: 'task.updated',
-      actorId: actorId ?? 'system',
-      task: {
-        id: id,
-        ownerId: before.authorId,
-      },
-      before: {
-        status: before.status,
-        assignedUserIds: before.assignedUserIds,
-      },
-      after: {
-        status: after.status,
-        assignedUserIds: after.assignedUserIds,
-      },
-    };
+      const payload = {
+        event: 'task.updated',
+        actorId: actorId ?? 'system',
+        actorName: actorName ?? 'system',
+        task: {
+          id,
+          ownerId: before.authorId,
+          ownerName: before.authorName,
+        },
+        before: {
+          status: before.status,
+          assignedUserIds: before.assignedUserIds,
+        },
+        after: {
+          status: after.status,
+          assignedUserIds: after.assignedUserIds,
+        },
+      };
 
-    if (Object.keys(changes).length > 0) {
       this.client
         .emit('task.updated', payload)
         .pipe(
@@ -243,7 +275,7 @@ export class TasksService {
 
   async createComment(
     taskId: string,
-    comment: CreateCommentDto & { authorId?: string },
+    comment: CreateCommentDto & { authorId?: string; authorName?: string },
   ) {
     this.assertUUID(taskId, 'Task ID');
 
@@ -253,6 +285,7 @@ export class TasksService {
     const commentEntity = {
       content: comment.content,
       authorId: comment.authorId!,
+      authorName: comment.authorName!,
       task: taskExists,
     };
 
@@ -266,14 +299,17 @@ export class TasksService {
         commentId: createdComment.id,
       },
       comment.authorId,
+      comment.authorName,
     );
 
     const payload = {
       event: 'task.comment.created',
       actorId: comment.authorId,
+      actorName: comment.authorName,
       task: {
         id: taskExists.id,
         ownerId: taskExists.authorId,
+        ownerName: taskExists.authorName,
         assignedUserIds: taskExists.assignedUserIds,
       },
       comment: {

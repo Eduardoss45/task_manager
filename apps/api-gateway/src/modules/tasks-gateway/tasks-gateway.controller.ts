@@ -1,3 +1,4 @@
+import { Payload } from '@nestjs/microservices';
 import {
   Controller,
   Get,
@@ -48,6 +49,7 @@ export class TasksGatewayController {
       authorId: req.user.userId,
       authorName: req.user.username,
     };
+
     return this.tasksService.createTask(payload);
   }
 
@@ -72,7 +74,9 @@ export class TasksGatewayController {
     const payload: UpdateTaskCommand = {
       ...body,
       actorId: req.user.userId,
+      actorName: req.user.username,
     };
+
     return this.tasksService.updateTask(id, payload);
   }
 
@@ -93,11 +97,13 @@ export class TasksGatewayController {
     @Body() body: CreateCommentDto,
     @Req() req: any,
   ) {
-    return this.tasksService.createComment(id, {
+    const payload: CreateCommentDto = {
       ...body,
       authorId: req.user.userId,
       authorName: req.user.username,
-    });
+    };
+
+    return this.tasksService.createComment(id, payload);
   }
 
   @Get(':id/comments')

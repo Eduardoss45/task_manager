@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { CreateCommentDto, UpdateTaskDto, CreateTaskDto } from '@jungle/dtos';
 
 @Injectable()
-export class TasksService {
+export class TasksGatewayService {
   constructor(@Inject('TASKS_SERVICE') private client: ClientProxy) {}
 
   async getTasks(page: number, size: number) {
@@ -13,7 +13,9 @@ export class TasksService {
     );
   }
 
-  async createTask(task: CreateTaskDto & { authorId: string }) {
+  async createTask(
+    task: CreateTaskDto & { authorId: string; authorName: string },
+  ) {
     return firstValueFrom(this.client.send({ cmd: 'createTask' }, task));
   }
 
