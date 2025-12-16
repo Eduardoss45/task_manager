@@ -257,6 +257,7 @@ export class TasksService {
           id,
           ownerId: before.authorId,
           ownerName: before.authorName,
+          title: before.title,
         },
         before: {
           status: before.status,
@@ -331,6 +332,7 @@ export class TasksService {
         ownerId: taskExists.authorId,
         ownerName: taskExists.authorName,
         assignedUserIds: taskExists.assignedUserIds,
+        title: taskExists.title,
       },
       comment: {
         id: createdComment.id,

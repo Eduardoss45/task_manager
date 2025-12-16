@@ -154,9 +154,9 @@ export default function TaskDetailsPage({ taskId }: TaskDetailsPageProps) {
         <EditTaskForm
           task={task}
           availableUsers={availableUsers}
-          onSuccess={() => {
+          onSuccess={updatedTask => {
+            setTask(updatedTask);
             setEditing(false);
-            loadTask();
           }}
         />
       )}

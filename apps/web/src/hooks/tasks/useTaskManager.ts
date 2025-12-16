@@ -89,11 +89,17 @@ export function useTaskManager() {
 
   const updateTask = async (id: string, data: Partial<Task>) => {
     try {
-      await api.put(`api/tasks/${id}`, data, { withCredentials: true });
+      const res = await api.put(`api/tasks/${id}`, data, {
+        withCredentials: true,
+      });
+
       invalidateTask(id);
       toast.success("Task atualizada");
+
+      return res.data;
     } catch {
       toast.error("Erro ao atualizar task");
+      throw new Error("update_failed");
     }
   };
 

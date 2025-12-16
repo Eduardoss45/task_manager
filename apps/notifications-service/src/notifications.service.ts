@@ -27,12 +27,18 @@ export class NotificationsService {
     });
   }
 
+  private normalizeUserIds(
+    users: Array<string | { userId: string }>,
+  ): string[] {
+    return users.map((u) => (typeof u === 'string' ? u : u.userId));
+  }
+
   async handleTaskCreated(event: any) {
     const { actorId, task } = event;
 
-    const recipients = task.assignedUserIds.filter(
-      (id: string) => id !== actorId,
-    );
+    const assignedIds = this.normalizeUserIds(task.assignedUserIds ?? []);
+
+    const recipients = assignedIds.filter((id) => id !== actorId);
 
     await Promise.all(
       recipients.map((userId) =>
@@ -46,10 +52,16 @@ export class NotificationsService {
   async handleTaskUpdated(event: any) {
     const { actorId, task, before, after } = event;
 
+    const beforeAssignedIds = this.normalizeUserIds(
+      before.assignedUserIds ?? [],
+    );
+
+    const afterAssignedIds = this.normalizeUserIds(after.assignedUserIds ?? []);
+
     const recipients = new Set<string>();
 
-    const newAssignees = after.assignedUserIds.filter(
-      (id: string) => !before.assignedUserIds.includes(id),
+    const newAssignees = afterAssignedIds.filter(
+      (id) => !beforeAssignedIds.includes(id),
     );
 
     newAssignees.forEach((id) => recipients.add(id));
@@ -74,7 +86,9 @@ export class NotificationsService {
   async handleCommentCreated(event: any) {
     const { actorId, task } = event;
 
-    const recipients = new Set<string>([task.ownerId, ...task.assignedUserIds]);
+    const assignedIds = this.normalizeUserIds(task.assignedUserIds ?? []);
+
+    const recipients = new Set<string>([task.ownerId, ...assignedIds]);
 
     recipients.delete(actorId);
 

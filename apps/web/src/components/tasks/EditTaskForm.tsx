@@ -33,7 +33,7 @@ type EditTaskFormProps = {
     status: any;
   };
   availableUsers?: AssignedUser[];
-  onSuccess: () => void;
+  onSuccess: (updatedTask: any) => void;
 };
 
 export function EditTaskForm({ task, availableUsers, onSuccess }: EditTaskFormProps) {
@@ -66,7 +66,7 @@ export function EditTaskForm({ task, availableUsers, onSuccess }: EditTaskFormPr
   }
 
   async function onSubmit(data: any) {
-    await updateTask(task.id, {
+    const updatedTask = await updateTask(task.id, {
       ...data,
       assignedUserIds: assigned.map(u => ({
         userId: u.userId,
@@ -74,7 +74,9 @@ export function EditTaskForm({ task, availableUsers, onSuccess }: EditTaskFormPr
       })),
     });
 
-    onSuccess();
+    if (updatedTask) {
+      onSuccess(updatedTask);
+    }
   }
 
   return (
