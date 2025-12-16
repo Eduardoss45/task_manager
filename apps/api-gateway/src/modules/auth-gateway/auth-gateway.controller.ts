@@ -133,6 +133,16 @@ export class AuthGatewayController {
     });
   }
 
+  @Post('forgot-password')
+  async forgotPassword(@Body() body: { email: string; username: string }) {
+    return this.auth.forgotPassword(body);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() body: { token: string; newPassword: string }) {
+    return this.auth.resetPassword(body);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('users')
   @ApiOperation({ summary: 'Obtém os usuários disponíveis para atribuição' })

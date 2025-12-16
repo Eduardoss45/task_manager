@@ -21,6 +21,14 @@ export class AuthGatewayService {
     );
   }
 
+  async forgotPassword(data: { email: string; username: string }) {
+    return firstValueFrom(this.client.send({ cmd: 'forgot-password' }, data));
+  }
+
+  async resetPassword(data: { token: string; newPassword: string }) {
+    return firstValueFrom(this.client.send({ cmd: 'reset-password' }, data));
+  }
+
   async users(userId: string) {
     return firstValueFrom(this.client.send({ cmd: 'users' }, { userId }));
   }

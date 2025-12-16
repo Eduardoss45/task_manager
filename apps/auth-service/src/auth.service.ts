@@ -3,13 +3,20 @@ import { RpcException } from '@nestjs/microservices';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from './entity/repository/user.repository';
-import { LoginDto, RegisterDto } from '@TaskManager/dtos';
+import { PasswordResetService } from './password.service';
+import {
+  LoginDto,
+  RegisterDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+} from '@TaskManager/dtos';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly users: UserRepository,
     private readonly jwtService: JwtService,
+    private readonly passwordReset: PasswordResetService,
   ) {}
 
   private async getAvailableUsers(userId: string) {
@@ -40,6 +47,14 @@ export class AuthService {
     );
 
     return { accessToken, refreshToken };
+  }
+
+  async forgotPassword(data: ForgotPasswordDto) {
+    return this.passwordReset.generate(data);
+  }
+
+  async resetPassword(data: ResetPasswordDto) {
+    return this.passwordReset.reset(data);
   }
 
   async register(data: RegisterDto) {

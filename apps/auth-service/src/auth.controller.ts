@@ -21,8 +21,18 @@ export class AuthController {
     return this.authService.refresh(data.refreshToken);
   }
 
+  @MessagePattern({ cmd: 'forgot-password' })
+  forgotPassword(data: any) {
+    return this.authService.forgotPassword(data);
+  }
+
+  @MessagePattern({ cmd: 'reset-password' })
+  resetPassword(data: any) {
+    return this.authService.resetPassword(data);
+  }
+
   @MessagePattern({ cmd: 'users' })
-  users(data: { userId: string }) {
+  users(data: any) {
     return this.authService.getUsersFromAccessToken(data.userId);
   }
 }

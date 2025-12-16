@@ -6,6 +6,9 @@ import { UserRepository } from './entity/repository/user.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { User } from './entity/user.entity';
+import { PasswordReset } from './entity/password_resets.entity';
+import { PasswordResetRepository } from './entity/repository/password_reset.repository';
+import { PasswordResetService } from './password.service';
 
 @Module({
   imports: [
@@ -18,7 +21,7 @@ import { User } from './entity/user.entity';
       synchronize: false,
     }),
 
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, PasswordReset]),
 
     JwtModule.register({
       secret: process.env.JWT_SECRET!,
@@ -26,6 +29,11 @@ import { User } from './entity/user.entity';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserRepository],
+  providers: [
+    AuthService,
+    PasswordResetService,
+    UserRepository,
+    PasswordResetRepository,
+  ],
 })
 export class AuthModule {}

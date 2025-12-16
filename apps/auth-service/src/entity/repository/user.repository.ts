@@ -27,6 +27,10 @@ export class UserRepository {
     return this.repo.update(userId, { refreshTokenHash: hash ?? undefined });
   }
 
+  updatePassword(userId: string, password: string) {
+    return this.repo.update(userId, { password });
+  }
+
   async findAvailableUsers(excludeUserId: string) {
     return this.repo.find({
       where: { id: Not(excludeUserId) },
