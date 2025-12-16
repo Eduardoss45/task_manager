@@ -5,11 +5,10 @@ import {
   IsEnum,
   IsArray,
   ValidateNested,
-  ArrayNotEmpty,
   IsDateString,
 } from "class-validator";
 import { Transform } from "class-transformer";
-import { TaskPriority, TaskStatus } from "@jungle/enums";
+import { TaskPriority, TaskStatus } from "@TaskManager/enums";
 import { AssignedUserDto } from "./assigned-user.dto";
 import { Type } from "class-transformer";
 
@@ -57,7 +56,6 @@ export class CreateTaskDto {
   })
   @IsOptional()
   @IsArray()
-  @ArrayNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => AssignedUserDto)
   assignedUserIds?: AssignedUserDto[];

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useTaskManager } from "@/hooks/tasks/useTaskManager";
-import { TaskSkeleton } from "./TaskSkeleton.tsx";
+import { TaskSkeleton } from "../skeletons/TaskSkeleton.tsx";
 import { TaskCard } from "./TaskCard.tsx";
 import { Link } from "@tanstack/react-router";
 

@@ -1,7 +1,11 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { TasksService } from './tasks.service';
-import { CreateTaskDto, UpdateTaskDto, CreateCommentDto } from '@jungle/dtos';
+import {
+  CreateTaskDto,
+  UpdateTaskDto,
+  CreateCommentDto,
+} from '@TaskManager/dtos';
 
 @Controller()
 export class TasksController {

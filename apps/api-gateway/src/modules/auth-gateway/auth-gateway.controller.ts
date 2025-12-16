@@ -1,8 +1,22 @@
-import { Controller, Post, Body, Req, Res } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { Controller, Post, Body, Req, Res, Get } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AuthGatewayService } from './auth-gateway.service';
-import { LoginDto, RegisterDto } from '@jungle/dtos';
+import {
+  LoginDto,
+  RegisterDto,
+  AvailableUsersResponseDto,
+} from '@TaskManager/dtos';
 import { Response, Request } from 'express';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../security/jwt.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -46,7 +60,6 @@ export class AuthGatewayController {
           email: 'edu@test.com',
           username: 'edu',
         },
-        availableUsers: [],
       },
     },
   })
@@ -74,7 +87,6 @@ export class AuthGatewayController {
           email: 'edu@test.com',
           username: 'edu',
         },
-        availableUsers: [{ userId: 'uuid', username: 'jose' }],
       },
     },
   })
@@ -101,7 +113,6 @@ export class AuthGatewayController {
           email: 'edu@test.com',
           username: 'edu',
         },
-        availableUsers: [{ userId: 'uuid', username: 'jose' }],
       },
     },
   })
@@ -123,6 +134,27 @@ export class AuthGatewayController {
     return res.json({
       user: result.user,
       availableUsers: result.availableUsers,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('users')
+  @ApiOperation({ summary: 'Obtém os usuários disponíveis para atribuição' })
+  @ApiOkResponse({
+    description: 'Lista de usuários disponíveis',
+    type: AvailableUsersResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Access token inválido ou ausente',
+  })
+  @ApiBearerAuth()
+  async users(@Req() req: any, @Res() res: Response) {
+    const userId = req.user.userId;
+
+    const result = await this.auth.users(userId);
+
+    return res.json({
+      availableUsers: result.availableUsers ?? [],
     });
   }
 }

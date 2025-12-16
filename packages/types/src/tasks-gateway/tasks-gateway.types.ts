@@ -1,4 +1,4 @@
-import { CreateTaskDto, UpdateTaskDto } from "@jungle/dtos";
+import { CreateTaskDto, UpdateTaskDto } from "@TaskManager/dtos";
 
 export type CreateTaskCommand = CreateTaskDto & {
   authorId: string;

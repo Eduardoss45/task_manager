@@ -1,7 +1,11 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { CreateCommentDto, UpdateTaskDto, CreateTaskDto } from '@jungle/dtos';
+import {
+  CreateCommentDto,
+  UpdateTaskDto,
+  CreateTaskDto,
+} from '@TaskManager/dtos';
 
 @Injectable()
 export class TasksGatewayService {

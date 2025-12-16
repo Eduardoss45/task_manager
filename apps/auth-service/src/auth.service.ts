@@ -3,7 +3,7 @@ import { RpcException } from '@nestjs/microservices';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from './entity/repository/user.repository';
-import { LoginDto, RegisterDto } from '@jungle/dtos';
+import { LoginDto, RegisterDto } from '@TaskManager/dtos';
 
 @Injectable()
 export class AuthService {
@@ -96,15 +96,12 @@ export class AuthService {
     const refreshHash = await bcrypt.hash(tokens.refreshToken, 10);
     await this.users.updateRefreshToken(user.id, refreshHash);
 
-    const availableUsers = await this.getAvailableUsers(user.id);
-
     return {
       user: {
         id: user.id,
         email: user.email,
         username: user.username,
       },
-      availableUsers,
       ...tokens,
     };
   }
@@ -134,19 +131,24 @@ export class AuthService {
       const newRefreshHash = await bcrypt.hash(tokens.refreshToken, 10);
       await this.users.updateRefreshToken(user.id, newRefreshHash);
 
-      const availableUsers = await this.getAvailableUsers(user.id);
-
       return {
         user: {
           id: user.id,
           email: user.email,
           username: user.username,
         },
-        availableUsers,
         ...tokens,
       };
     } catch {
       throw new UnauthorizedException('Invalid token');
     }
+  }
+
+  async getUsersFromAccessToken(userId: string) {
+    const availableUsers = await this.getAvailableUsers(userId);
+
+    return {
+      availableUsers,
+    };
   }
 }

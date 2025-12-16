@@ -2,6 +2,7 @@ import { useCallback, useState, useRef } from "react";
 import { toast } from "sonner";
 import { api } from "@/services/api";
 import type { Task } from "@/types/task";
+import type { AvailableUser } from "@/types/available-user";
 
 export function useTaskManager() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -33,6 +34,36 @@ export function useTaskManager() {
     const res = await api.get(`api/tasks/${id}`, { withCredentials: true });
     taskCache.current[id] = res.data;
     return res.data;
+  }, []);
+
+  const usersCache = useRef<AvailableUser[] | null>(null);
+  const usersPromise = useRef<Promise<AvailableUser[]> | null>(null);
+
+  const getUsers = useCallback(async (): Promise<AvailableUser[]> => {
+    if (usersCache.current) {
+      return usersCache.current;
+    }
+
+    if (usersPromise.current) {
+      return usersPromise.current;
+    }
+
+    usersPromise.current = api
+      .get("/api/auth/users", { withCredentials: true })
+      .then(res => {
+        const users = res.data.availableUsers ?? [];
+        usersCache.current = users;
+        return users;
+      })
+      .catch(() => {
+        toast.error("Erro ao carregar usuários");
+        return [];
+      })
+      .finally(() => {
+        usersPromise.current = null;
+      });
+
+    return usersPromise.current;
   }, []);
 
   const createTask = async (data: Partial<Task>) => {
@@ -86,5 +117,6 @@ export function useTaskManager() {
     deleteTask,
     addComment,
     getComments,
+    getUsers,
   };
 }

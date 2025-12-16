@@ -3,8 +3,8 @@ import {
   UpdateTaskDto,
   CreateCommentDto,
   AssignedUserDto,
-} from '@jungle/dtos';
-import { TaskPriority, TaskStatus, TaskAuditAction } from '@jungle/enums';
+} from '@TaskManager/dtos';
+import { TaskPriority, TaskStatus, TaskAuditAction } from '@TaskManager/enums';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   Injectable,
@@ -28,6 +28,21 @@ export class TasksService {
     private readonly audit: TaskAuditService,
     @Inject('NOTIFICATIONS_SERVICE') private readonly client: ClientProxy,
   ) {}
+
+  private assertAuthorNotAssigned(
+    authorId: string | undefined,
+    assignedUsers: AssignedUserDto[],
+  ) {
+    if (!authorId) return;
+
+    const isAssigned = assignedUsers.some((u) => u.userId === authorId);
+
+    if (isAssigned) {
+      throw new BadRequestException(
+        'Task author cannot be assigned to the task',
+      );
+    }
+  }
 
   private assertUUID(id: string, field: string) {
     if (!isUUID(id)) {
@@ -98,6 +113,7 @@ export class TasksService {
       assignedUserIds.map((u) => u.userId),
       'Assigned users',
     );
+    this.assertAuthorNotAssigned(task.authorId, assignedUserIds);
 
     const priority =
       this.mapPriorityOrThrow(task.priority) ?? TaskPriority.MEDIUM;
@@ -193,6 +209,10 @@ export class TasksService {
       this.assertNoDuplicates(
         updatesEntity.assignedUserIds.map((u) => u.userId),
         'Assigned users',
+      );
+      this.assertAuthorNotAssigned(
+        before.authorId,
+        updatesEntity.assignedUserIds,
       );
     }
 

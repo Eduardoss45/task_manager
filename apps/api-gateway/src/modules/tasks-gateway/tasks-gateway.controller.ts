@@ -19,8 +19,12 @@ import {
   ApiQuery,
   ApiParam,
 } from '@nestjs/swagger';
-import { CreateCommentDto, UpdateTaskDto, CreateTaskDto } from '@jungle/dtos';
-import { CreateTaskCommand, UpdateTaskCommand } from '@jungle/types';
+import {
+  CreateCommentDto,
+  UpdateTaskDto,
+  CreateTaskDto,
+} from '@TaskManager/dtos';
+import { CreateTaskCommand, UpdateTaskCommand } from '@TaskManager/types';
 import { TasksGatewayService } from './tasks-gateway.service';
 import { JwtAuthGuard } from '../security/jwt.guard';
 

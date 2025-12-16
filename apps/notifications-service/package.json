@@ -1,5 +1,5 @@
 {
-    "name": "@jungle/notifications-service",
+    "name": "@TaskManager/notifications-service",
     "version": "0.0.1",
     "description": "",
     "author": "",
@@ -25,7 +25,7 @@
         "migration:revert": "npm run typeorm -- migration:revert"
     },
     "dependencies": {
-        "@jungle/dtos": "*",
+        "@TaskManager/dtos": "*",
         "@nestjs/common": "^11.0.1",
         "@nestjs/core": "^11.0.1",
         "@nestjs/platform-express": "^11.0.1",

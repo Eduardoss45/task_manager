@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { LoginDto, RegisterDto } from '@jungle/dtos';
+import { LoginDto, RegisterDto } from '@TaskManager/dtos';
 
 @Injectable()
 export class AuthGatewayService {
@@ -19,5 +19,9 @@ export class AuthGatewayService {
     return firstValueFrom(
       this.client.send({ cmd: 'refresh' }, { refreshToken }),
     );
+  }
+
+  async users(userId: string) {
+    return firstValueFrom(this.client.send({ cmd: 'users' }, { userId }));
   }
 }

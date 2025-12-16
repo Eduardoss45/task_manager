@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { Comment } from './comment.entity';
 
-import { TaskPriority, TaskStatus } from '@jungle/enums';
+import { TaskPriority, TaskStatus } from '@TaskManager/enums';
 
 @Entity('tasks')
 export class Task {

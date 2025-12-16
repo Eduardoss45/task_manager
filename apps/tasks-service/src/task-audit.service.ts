@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { TaskAuditRepository } from './entity/repository/task-audit.repository';
-import { TaskAuditAction } from '@jungle/enums';
+import { TaskAuditAction } from '@TaskManager/enums';
 
 @Injectable()
 export class TaskAuditService {

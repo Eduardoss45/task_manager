@@ -14,7 +14,7 @@ import {
   CreateTaskDto,
   UpdateTaskDto,
   CreateCommentDto,
-} from '@jungle/dtos';
+} from '@TaskManager/dtos';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
