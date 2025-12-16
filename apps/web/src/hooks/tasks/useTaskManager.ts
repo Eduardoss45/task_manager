@@ -9,6 +9,14 @@ export function useTaskManager() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const invalidateTask = (taskId: string) => {
+    delete taskCache.current[taskId];
+  };
+
+  const invalidateAllTasks = () => {
+    taskCache.current = {};
+  };
+
   const fetchTasks = useCallback(async (page = 1, size = 10) => {
     if (page <= 0 || size <= 0) return;
 
@@ -69,7 +77,10 @@ export function useTaskManager() {
   const createTask = async (data: Partial<Task>) => {
     try {
       const res = await api.post("api/tasks", data, { withCredentials: true });
+
+      invalidateAllTasks();
       toast.success("Task criada com sucesso");
+
       return res.data;
     } catch {
       toast.error("Erro ao criar task");
@@ -79,6 +90,7 @@ export function useTaskManager() {
   const updateTask = async (id: string, data: Partial<Task>) => {
     try {
       await api.put(`api/tasks/${id}`, data, { withCredentials: true });
+      invalidateTask(id);
       toast.success("Task atualizada");
     } catch {
       toast.error("Erro ao atualizar task");
@@ -88,15 +100,24 @@ export function useTaskManager() {
   const deleteTask = async (id: string) => {
     try {
       await api.delete(`api/tasks/${id}`, { withCredentials: true });
+      invalidateAllTasks();
       toast.success("Task removida");
+      return true;
     } catch {
       toast.error("Erro ao remover task");
+      return false;
     }
   };
 
   const addComment = async (taskId: string, content: string) => {
-    await api.post(`api/tasks/${taskId}/comments`, { content }, { withCredentials: true });
-    toast.success("Comentário adicionado");
+    try {
+      await api.post(`api/tasks/${taskId}/comments`, { content }, { withCredentials: true });
+
+      invalidateTask(taskId);
+      toast.success("Comentário adicionado");
+    } catch {
+      toast.error("Erro ao adicionar comentário");
+    }
   };
 
   const getComments = async (taskId: string, page = 1, size = 10) => {
@@ -118,5 +139,7 @@ export function useTaskManager() {
     addComment,
     getComments,
     getUsers,
+    invalidateTask,
+    invalidateAllTasks,
   };
 }

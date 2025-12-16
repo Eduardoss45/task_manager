@@ -9,7 +9,7 @@ import {
 } from "class-validator";
 import { Transform } from "class-transformer";
 import { TaskPriority, TaskStatus } from "@TaskManager/enums";
-import { AssignedUserDto } from "./assigned-user.dto";
+import { AssignedUserDto } from "../auth/assigned-user.dto";
 import { Type } from "class-transformer";
 
 export class CreateTaskDto {

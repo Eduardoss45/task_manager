@@ -3,6 +3,8 @@ import { Toaster } from "@/components/ui/sonner";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useEffect } from "react";
+import { useNotifications } from "@/hooks/notifications/useNotifications";
+import { NotificationsListener } from "@/components/notifications/NotificationsListener";
 import { useUserConnect } from "@/hooks/auth/useUserConnect";
 
 export const Route = createRootRoute({
@@ -11,6 +13,7 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const { bootstrapSession, hydrated } = useUserConnect();
+  useNotifications();
 
   useEffect(() => {
     bootstrapSession();
@@ -23,6 +26,7 @@ function RootComponent() {
     <>
       <Header />
       <Outlet />
+      <NotificationsListener />
       <Toaster richColors position="top-right" />
       <Footer />
     </>

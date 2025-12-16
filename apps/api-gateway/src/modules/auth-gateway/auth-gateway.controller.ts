@@ -9,11 +9,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AuthGatewayService } from './auth-gateway.service';
-import {
-  LoginDto,
-  RegisterDto,
-  AvailableUsersResponseDto,
-} from '@TaskManager/dtos';
+import { LoginDto, RegisterDto, AssignedUserDto } from '@TaskManager/dtos';
 import { Response, Request } from 'express';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../security/jwt.guard';
@@ -142,7 +138,7 @@ export class AuthGatewayController {
   @ApiOperation({ summary: 'Obtém os usuários disponíveis para atribuição' })
   @ApiOkResponse({
     description: 'Lista de usuários disponíveis',
-    type: AvailableUsersResponseDto,
+    type: AssignedUserDto,
   })
   @ApiUnauthorizedResponse({
     description: 'Access token inválido ou ausente',

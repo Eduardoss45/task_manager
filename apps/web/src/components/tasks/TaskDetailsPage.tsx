@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,12 +7,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Calendar, User, MessageSquare, History } from "lucide-react";
-
 import { useTaskManager } from "@/hooks/tasks/useTaskManager";
 import type { TaskDetails } from "@/types/task-details";
 import { formatDate } from "@/lib/formatters/date";
-
-// components
 import { EditTaskForm } from "@/components/tasks/EditTaskForm";
 import { AddCommentForm } from "@/components/comments/AddCommentForm";
 import { CommentsList } from "@/components/comments/CommentsList";
@@ -37,6 +34,7 @@ const priorityColor: Record<string, string> = {
 
 export default function TaskDetailsPage({ taskId }: TaskDetailsPageProps) {
   const { getTask, deleteTask, getUsers } = useTaskManager();
+  const navigate = useNavigate();
 
   const [task, setTask] = useState<TaskDetails | null>(null);
   const [availableUsers, setAvailableUsers] = useState<{ userId: string; username: string }[]>([]);
@@ -139,7 +137,15 @@ export default function TaskDetailsPage({ taskId }: TaskDetailsPageProps) {
         <Button variant="secondary" onClick={() => setEditing(true)}>
           Editar
         </Button>
-        <Button variant="destructive" onClick={() => deleteTask(task.id)}>
+        <Button
+          variant="destructive"
+          onClick={async () => {
+            const ok = await deleteTask(task.id);
+            if (ok) {
+              navigate({ to: "/tasks" });
+            }
+          }}
+        >
           Deletar
         </Button>
       </div>

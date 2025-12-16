@@ -6,15 +6,22 @@ import { Button } from "@/components/ui/button";
 import { useTaskManager } from "@/hooks/tasks/useTaskManager";
 import { Send } from "lucide-react";
 
-export function AddCommentForm({ taskId, onSuccess }: any) {
+type AddCommentFormProps = {
+  taskId: string;
+  onSuccess?: () => void;
+};
+
+export function AddCommentForm({ taskId, onSuccess }: AddCommentFormProps) {
   const { addComment } = useTaskManager();
 
-  const form = useForm({ resolver: zodResolver(commentSchema) });
+  const form = useForm({
+    resolver: zodResolver(commentSchema),
+  });
 
   async function onSubmit(data: any) {
     await addComment(taskId, data.content);
     form.reset();
-    onSuccess();
+    onSuccess?.();
   }
 
   return (
