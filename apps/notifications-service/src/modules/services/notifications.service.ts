@@ -1,6 +1,6 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { NotificationRepository } from './entity/repository/notifications.repository';
+import { NotificationRepository } from '../repositories/notifications.repository';
 
 @Injectable()
 export class NotificationsService {
@@ -101,5 +101,18 @@ export class NotificationsService {
     this.logger.log(
       `comment.new → dispatched to ${[...recipients].join(', ')}`,
     );
+  }
+
+  async healthCheckNotificationsDatabase(): Promise<'up' | 'down'> {
+    const requiredVars = ['RMQ_URL', 'DATABASE_URL'];
+    const missingVars = requiredVars.filter((v) => !process.env[v]);
+
+    if (missingVars.length > 0) {
+      console.error('Missing environment variables:', missingVars);
+      return 'down';
+    }
+
+    const dbNotificationsStatus = await this.notifications.checkDatabaseHealthNotifications();
+    return dbNotificationsStatus ? 'up' : 'down';
   }
 }

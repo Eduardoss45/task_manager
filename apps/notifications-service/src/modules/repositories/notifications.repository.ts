@@ -13,4 +13,13 @@ export class NotificationRepository {
   create(data: Partial<Notification>) {
     return this.repo.save(data);
   }
+
+  async checkDatabaseHealthNotifications(): Promise<boolean> {
+    try {
+      await this.repo.query('SELECT 1');
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
 }

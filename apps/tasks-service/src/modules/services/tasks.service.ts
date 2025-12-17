@@ -17,7 +17,7 @@ import { TasksRepository } from '../repositories/tasks.repository';
 import { Task } from '../entities/task.entity';
 import { validate as isUUID } from 'uuid';
 import { TaskAuditService } from './task-audit.service';
-import { catchError, of } from 'rxjs';
+import { catchError, of, firstValueFrom, timeout } from 'rxjs';
 
 @Injectable()
 export class TasksService {
@@ -367,12 +367,29 @@ export class TasksService {
     const missingVars = requiredVars.filter((v) => !process.env[v]);
 
     if (missingVars.length > 0) {
-      console.error('Missing environment variables:', missingVars);
+      this.logger.error('Missing environment variables', missingVars);
       return 'down';
+    }
+
+    let notificationsRes: 'up' | 'down' = 'down';
+
+    try {
+      notificationsRes = await firstValueFrom(
+        this.client
+          .send({ cmd: 'notifications-start' }, {})
+          .pipe(timeout(2000)),
+      );
+    } catch (err) {
+      this.logger.error('Notifications health check failed', err);
     }
 
     const dbTasksAndCommentsStatus =
       await this.repo.checkDatabaseHealthTasksAndComments();
-    return dbTasksAndCommentsStatus ? 'up' : 'down';
+
+    if (dbTasksAndCommentsStatus === true && notificationsRes === 'up') {
+      return 'up';
+    }
+
+    return 'down';
   }
 }

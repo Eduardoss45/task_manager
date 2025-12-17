@@ -14,8 +14,8 @@ export class HealthService {
   async checkReadiness() {
     return {
       auth: await this.checkAuth(this.authClient),
-      tasks: await this.checkTasks(this.tasksClient),
-      notification: this.notificationsGateway.server ? 'up' : 'down',
+      tasks_and_notifications: await this.checkTasks(this.tasksClient),
+      gateway: this.notificationsGateway.server ? 'up' : 'down',
     };
   }
 

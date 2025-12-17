@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationsController } from './modules/controllers/notifications.controller';
 import { NotificationsService } from './modules/services/notifications.service';
 import { Notification } from './modules/entities/notifications.entity';
-import { NotificationRepository } from './modules/repository/notifications.repository';
+import { NotificationRepository } from './modules/repositories/notifications.repository';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({

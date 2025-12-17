@@ -19,13 +19,7 @@ type FormatterArgs = {
   currentUserId?: string;
 };
 
-function ToastContent({
-  icon: Icon,
-  text,
-}: {
-  icon: React.ElementType;
-  text: string;
-}) {
+function ToastContent({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
   return (
     <div className="flex items-start gap-2">
       <Icon className="h-4 w-4 mt-0.5 text-zinc-500" />
@@ -34,11 +28,7 @@ function ToastContent({
   );
 }
 
-export function formatAndNotify({
-  type,
-  payload,
-  currentUserId,
-}: FormatterArgs) {
+export function formatAndNotify({ type, payload, currentUserId }: FormatterArgs) {
   switch (type) {
     case "task:created": {
       toast.info(
@@ -51,13 +41,10 @@ export function formatAndNotify({
     }
 
     case "task:updated": {
-      const { actorName, task, before, after, actorId } =
-        payload as TaskUpdatedPayload;
+      const { actorName, task, before, after, actorId } = payload as TaskUpdatedPayload;
 
-      // Não notificar ações do próprio usuário
       if (actorId === currentUserId) return;
 
-      // 🔄 Status
       if (before.status && after.status && before.status !== after.status) {
         toast.info(
           <ToastContent
@@ -68,23 +55,15 @@ export function formatAndNotify({
         return;
       }
 
-      const { added, removed } = diffAssignedUsers(
-        before.assignedUserIds,
-        after.assignedUserIds
-      );
+      const { added, removed } = diffAssignedUsers(before.assignedUserIds, after.assignedUserIds);
 
-      // 👤 Fui atribuído
       if (added.some(u => u.userId === currentUserId)) {
         toast.success(
-          <ToastContent
-            icon={UserPlus}
-            text={`${actorName} te atribuiu à task "${task.title}"`}
-          />
+          <ToastContent icon={UserPlus} text={`${actorName} te atribuiu à task "${task.title}"`} />
         );
         return;
       }
 
-      // 🚫 Fui removido
       if (removed.some(u => u.userId === currentUserId)) {
         toast.warning(
           <ToastContent
@@ -95,7 +74,6 @@ export function formatAndNotify({
         return;
       }
 
-      // 👥 Alteração genérica
       if (added.length || removed.length) {
         toast(
           <ToastContent
@@ -106,12 +84,7 @@ export function formatAndNotify({
         return;
       }
 
-      toast(
-        <ToastContent
-          icon={Pencil}
-          text={`${actorName} atualizou a task "${task.title}"`}
-        />
-      );
+      toast(<ToastContent icon={Pencil} text={`${actorName} atualizou a task "${task.title}"`} />);
       return;
     }
 
@@ -126,11 +99,6 @@ export function formatAndNotify({
     }
 
     default:
-      toast(
-        <ToastContent
-          icon={Bell}
-          text="Nova notificação"
-        />
-      );
+      toast(<ToastContent icon={Bell} text="Nova notificação" />);
   }
 }
