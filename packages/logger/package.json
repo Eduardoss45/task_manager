@@ -1,5 +1,5 @@
 {
-    "name": "@task_manager/types",
+    "name": "@task_manager/logger",
     "version": "1.0.0",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",

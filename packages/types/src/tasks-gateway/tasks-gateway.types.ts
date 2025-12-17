@@ -1,4 +1,4 @@
-import { CreateTaskDto, UpdateTaskDto } from "@TaskManager/dtos";
+import { CreateTaskDto, UpdateTaskDto } from "@task_manager/dtos";
 
 export type CreateTaskCommand = CreateTaskDto & {
   authorId: string;

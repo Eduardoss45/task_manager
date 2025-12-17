@@ -1,5 +1,5 @@
 {
-  "name": "@TaskManager/api-gateway",
+  "name": "@task_manager/api-gateway",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -18,8 +18,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@TaskManager/dtos": "*",
-    "@TaskManager/types": "*",
+    "@task_manager/dtos": "*",
+    "@task_manager/types": "*",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",

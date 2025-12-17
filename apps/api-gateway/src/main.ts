@@ -4,8 +4,8 @@ import { ApiModule } from './api.module';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { RmqExceptionInterceptor } from './modules/exception/rmq-exception.interceptor';
 import { Transport } from '@nestjs/microservices';
+import { LoggerService } from '@task_manager/logger';
 
 import {
   LoginDto,
@@ -13,10 +13,15 @@ import {
   CreateTaskDto,
   UpdateTaskDto,
   CreateCommentDto,
-} from '@TaskManager/dtos';
+} from '@task_manager/dtos';
 
 async function bootstrap() {
-  const app = await NestFactory.create(ApiModule);
+  const app = await NestFactory.create(ApiModule, {
+    bufferLogs: true,
+  });
+
+  const logger = app.get(LoggerService);
+  app.useLogger(logger);
 
   app.setGlobalPrefix('api');
   app.enableCors({
@@ -32,8 +37,6 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
-  app.useGlobalInterceptors(new RmqExceptionInterceptor());
 
   const config = new DocumentBuilder()
     .setTitle('Task Manager API')

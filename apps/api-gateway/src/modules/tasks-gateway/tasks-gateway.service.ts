@@ -5,7 +5,7 @@ import {
   CreateCommentDto,
   UpdateTaskDto,
   CreateTaskDto,
-} from '@TaskManager/dtos';
+} from '@task_manager/dtos';
 
 @Injectable()
 export class TasksGatewayService {

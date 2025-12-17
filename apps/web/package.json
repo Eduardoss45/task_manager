@@ -1,5 +1,5 @@
 {
-  "name": "@TaskManager/web",
+  "name": "@task_manager/web",
   "private": true,
   "version": "0.0.0",
   "type": "module",

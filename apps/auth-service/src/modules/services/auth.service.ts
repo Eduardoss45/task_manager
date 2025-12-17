@@ -9,7 +9,7 @@ import {
   RegisterDto,
   ForgotPasswordDto,
   ResetPasswordDto,
-} from '@TaskManager/dtos';
+} from '@task_manager/dtos';
 
 @Injectable()
 export class AuthService {

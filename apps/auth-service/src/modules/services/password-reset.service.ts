@@ -1,6 +1,6 @@
 import { UserRepository } from '../repositories/user.repository';
 import { PasswordResetRepository } from '../repositories/password-reset.repository';
-import { ForgotPasswordDto, ResetPasswordDto } from '@TaskManager/dtos';
+import { ForgotPasswordDto, ResetPasswordDto } from '@task_manager/dtos';
 
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';

@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-jwt';
 import { Request } from 'express';
+import { LoggerService } from '@task_manager/logger';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly logger: LoggerService) {
     super({
       jwtFromRequest: (req: Request) => req?.cookies?.accessToken,
       secretOrKey: process.env.JWT_SECRET!,
@@ -13,6 +14,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
+    this.logger.info('JWT validated successfully', {
+      userId: payload.sub,
+    });
+
     return {
       userId: payload.sub,
       email: payload.email,

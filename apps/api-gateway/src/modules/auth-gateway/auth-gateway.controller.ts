@@ -1,23 +1,33 @@
-import { Controller, Post, Body, Req, Res, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  Res,
+  Get,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
-  ApiResponse,
   ApiBody,
   ApiOkResponse,
   ApiUnauthorizedResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AuthGatewayService } from './auth-gateway.service';
-import { LoginDto, RegisterDto, AssignedUserDto } from '@TaskManager/dtos';
+import { LoginDto, RegisterDto, AssignedUserDto } from '@task_manager/dtos';
 import { Response, Request } from 'express';
-import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../guards/jwt.guard';
+import { LoggerService } from '@task_manager/logger';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthGatewayController {
-  constructor(private readonly auth: AuthGatewayService) {}
+  constructor(
+    private readonly auth: AuthGatewayService,
+    private readonly logger: LoggerService,
+  ) {}
 
   private setAuthCookies(
     res: Response,
@@ -46,21 +56,17 @@ export class AuthGatewayController {
   @Post('register')
   @ApiOperation({ summary: 'Registro de novo usuário' })
   @ApiBody({ type: RegisterDto })
-  @ApiResponse({
-    status: 201,
-    description: 'Usuário criado com sucesso',
-    schema: {
-      example: {
-        user: {
-          id: 'uuid',
-          email: 'edu@test.com',
-          username: 'edu',
-        },
-      },
-    },
-  })
   async register(@Body() body: RegisterDto, @Res() res: Response) {
+    this.logger.info('Register request received', {
+      email: body.email,
+      username: body.username,
+    });
+
     const result = await this.auth.register(body);
+
+    this.logger.info('User registered successfully', {
+      userId: result.user.id,
+    });
 
     this.setAuthCookies(res, result);
 
@@ -73,21 +79,16 @@ export class AuthGatewayController {
   @Post('login')
   @ApiOperation({ summary: 'Login do usuário' })
   @ApiBody({ type: LoginDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Login realizado com sucesso',
-    schema: {
-      example: {
-        user: {
-          id: 'uuid',
-          email: 'edu@test.com',
-          username: 'edu',
-        },
-      },
-    },
-  })
   async login(@Body() body: LoginDto, @Res() res: Response) {
+    this.logger.info('Login attempt', {
+      email: body.email,
+    });
+
     const result = await this.auth.login(body);
+
+    this.logger.info('User authenticated', {
+      userId: result.user.id,
+    });
 
     this.setAuthCookies(res, result);
 
@@ -99,31 +100,24 @@ export class AuthGatewayController {
 
   @Post('refresh')
   @ApiOperation({ summary: 'Renova o access token usando refresh token' })
-  @ApiResponse({
-    status: 200,
-    description: 'Tokens renovados',
-    schema: {
-      example: {
-        user: {
-          id: 'uuid',
-          email: 'edu@test.com',
-          username: 'edu',
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Refresh token inválido ou ausente',
-  })
   async refresh(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
+      this.logger.info('Refresh token missing', {
+        endpoint: 'POST /auth/refresh',
+      });
+
       return res.status(401).json({ error: 'No refresh token provided' });
     }
 
+    this.logger.info('Token refresh requested');
+
     const result = await this.auth.refresh(refreshToken);
+
+    this.logger.info('Token refreshed successfully', {
+      userId: result.user.id,
+    });
 
     this.setAuthCookies(res, result);
 
@@ -135,35 +129,22 @@ export class AuthGatewayController {
 
   @Post('forgot-password')
   @ApiOperation({ summary: 'Solicita redefinição de senha' })
-  @ApiResponse({
-    status: 201,
-    description: 'Token de redefinição enviado com sucesso',
-    schema: {
-      example: { message: 'Email de redefinição enviado' },
-    },
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Email ou username inválido',
-  })
   async forgotPassword(@Body() body: { email: string; username: string }) {
+    this.logger.info('Forgot password requested', {
+      email: body.email,
+      username: body.username,
+    });
+
     return this.auth.forgotPassword(body);
   }
 
   @Post('reset-password')
   @ApiOperation({ summary: 'Redefine a senha usando token enviado por email' })
-  @ApiResponse({
-    status: 200,
-    description: 'Senha redefinida com sucesso',
-    schema: {
-      example: { message: 'Senha redefinida com sucesso' },
-    },
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Token inválido ou expirado',
-  })
   async resetPassword(@Body() body: { token: string; newPassword: string }) {
+    this.logger.info('Reset password attempt', {
+      tokenProvided: true,
+    });
+
     return this.auth.resetPassword(body);
   }
 
@@ -180,6 +161,10 @@ export class AuthGatewayController {
   @ApiBearerAuth()
   async users(@Req() req: any, @Res() res: Response) {
     const userId = req.user.userId;
+
+    this.logger.info('Fetch available users', {
+      userId,
+    });
 
     const result = await this.auth.users(userId);
 

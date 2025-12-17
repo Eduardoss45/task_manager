@@ -8,7 +8,7 @@ import {
   IsDateString,
 } from "class-validator";
 import { Transform } from "class-transformer";
-import { TaskPriority, TaskStatus } from "@TaskManager/enums";
+import { TaskPriority, TaskStatus } from "@task_manager/enums";
 import { AssignedUserDto } from "../auth/assigned-user.dto";
 import { Type } from "class-transformer";
 

@@ -14,7 +14,6 @@ api-gateway -> auth-service -> task-service -> notifications-service
 - Testes Unitários
 - Swagger/OpenAPI (**dtos, controllers**)
 - Docker
-- .gitignore
 
 ## Diretórios
 
@@ -84,7 +83,9 @@ export class AuthService {
   - Validação de Variáveis de Ambiente com Joi
   - Nodemailer ou similares para envio de emails
   - Redis para armazenar cache
-  - Sistema de calendario no frontend
+  - Sistema de calendario no frontend- Contexto por módulo / caso de uso (logs)
+  - CorrelationId por request (logs)
+  - Integração com observabilidade (ELK / Loki) (logs)
 
 - Informações:
   - Fluxo de health-checks

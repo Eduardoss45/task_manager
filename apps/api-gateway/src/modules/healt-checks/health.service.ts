@@ -2,6 +2,7 @@ import { NotificationsGateway } from '../notifications-gateway/notifications.gat
 import { ClientProxy } from '@nestjs/microservices';
 import { Injectable, Inject } from '@nestjs/common';
 import { firstValueFrom, timeout } from 'rxjs';
+import { LoggerService } from '@task_manager/logger';
 
 @Injectable()
 export class HealthService {
@@ -9,6 +10,7 @@ export class HealthService {
     @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
     @Inject('TASKS_SERVICE') private readonly tasksClient: ClientProxy,
     private readonly notificationsGateway: NotificationsGateway,
+    private readonly logger: LoggerService,
   ) {}
 
   async checkReadiness() {
@@ -29,8 +31,10 @@ export class HealthService {
       const response = await firstValueFrom(
         client.send({ cmd: 'auth-start' }, {}).pipe(timeout(2000)),
       );
+
       return response === 'up' ? 'up' : 'down';
-    } catch {
+    } catch (error) {
+      this.logger.error('Auth service health check failed');
       return 'down';
     }
   }
@@ -42,7 +46,9 @@ export class HealthService {
         notifications: 'up' | 'down';
         audits: 'up' | 'down';
       }>(client.send({ cmd: 'tasks-start' }, {}).pipe(timeout(2000)));
-    } catch {
+    } catch (error) {
+      this.logger.error('Tasks service health check failed');
+
       return {
         tasks: 'down',
         notifications: 'down',

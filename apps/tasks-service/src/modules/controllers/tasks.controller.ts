@@ -6,7 +6,7 @@ import {
   CreateTaskDto,
   UpdateTaskDto,
   CreateCommentDto,
-} from '@TaskManager/dtos';
+} from '@task_manager/dtos';
 
 @Controller()
 export class TasksController {

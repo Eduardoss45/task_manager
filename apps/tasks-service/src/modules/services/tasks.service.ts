@@ -1,11 +1,11 @@
-import { HealthStatus, TasksHealthResponse } from '@TaskManager/types';
+import { HealthStatus, TasksHealthResponse } from '@task_manager/types';
 import {
   CreateTaskDto,
   UpdateTaskDto,
   CreateCommentDto,
   AssignedUserDto,
-} from '@TaskManager/dtos';
-import { TaskPriority, TaskStatus, TaskAuditAction } from '@TaskManager/enums';
+} from '@task_manager/dtos';
+import { TaskPriority, TaskStatus, TaskAuditAction } from '@task_manager/enums';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   Injectable,
