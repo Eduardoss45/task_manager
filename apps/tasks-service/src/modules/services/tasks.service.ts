@@ -12,22 +12,21 @@ import {
   Inject,
   NotFoundException,
   BadRequestException,
-  Logger,
 } from '@nestjs/common';
 import { TasksRepository } from '../repositories/tasks.repository';
 import { Task } from '../entities/task.entity';
 import { validate as isUUID } from 'uuid';
 import { TaskAuditService } from './task-audit.service';
 import { catchError, of, firstValueFrom, timeout } from 'rxjs';
+import { LoggerService } from '@task_manager/logger';
 
 @Injectable()
 export class TasksService {
-  private readonly logger = new Logger(TasksService.name);
-
   constructor(
     private readonly repo: TasksRepository,
     private readonly audit: TaskAuditService,
     @Inject('NOTIFICATIONS_EVENTS') private readonly client: ClientProxy,
+    private readonly logger: LoggerService,
   ) {}
 
   private assertAuthorNotAssigned(
@@ -101,12 +100,18 @@ export class TasksService {
   }
 
   async getTasks(page: number, size: number) {
+    this.logger.info('Fetching tasks', { page, size });
     return this.repo.findTasks(page, size);
   }
 
   async createTask(
     task: CreateTaskDto & { authorId?: string; authorName?: string },
   ) {
+    this.logger.info('Creating task', {
+      authorId: task.authorId,
+      title: task.title,
+    });
+
     const assignedUserIds = task.assignedUserIds ?? [];
 
     this.validateAssignedUserIds(assignedUserIds);
@@ -163,7 +168,7 @@ export class TasksService {
       .emit('task.created', payload)
       .pipe(
         catchError((err) => {
-          this.logger.error('Failed to emit task.created', err);
+          this.logger.info('Failed to emit task.created', { error: err });
           return of(null);
         }),
       )
@@ -176,13 +181,9 @@ export class TasksService {
     this.assertUUID(id, 'Task ID');
 
     const task = await this.repo.findTaskById(id);
-
-    if (!task) {
-      throw new NotFoundException('Task not found');
-    }
+    if (!task) throw new NotFoundException('Task not found');
 
     const audit = await this.audit.getByTask(id, 5);
-
     return { ...task, audit };
   }
 
@@ -219,7 +220,6 @@ export class TasksService {
 
     await this.repo.updateTask(id, updatesEntity);
     const after = await this.repo.findTaskById(id);
-
     if (!after) throw new NotFoundException('Task not found after update');
 
     const changes: Record<string, { before: any; after: any }> = {};
@@ -274,7 +274,7 @@ export class TasksService {
         .emit('task.updated', payload)
         .pipe(
           catchError((err) => {
-            this.logger.error('Failed to emit task.updated', err);
+            this.logger.info('Failed to emit task.updated', { error: err });
             return of(null);
           }),
         )
@@ -291,7 +291,6 @@ export class TasksService {
     if (!before) throw new NotFoundException('Task not found');
 
     await this.repo.deleteTask(id);
-
     return { deleted: true };
   }
 
@@ -304,22 +303,18 @@ export class TasksService {
     const taskExists = await this.repo.findTaskById(taskId);
     if (!taskExists) throw new NotFoundException('Task not found');
 
-    const commentEntity = {
+    const createdComment = await this.repo.createComment({
       content: comment.content,
       authorId: comment.authorId!,
       authorName: comment.authorName!,
       task: taskExists,
-    };
-
-    const createdComment = await this.repo.createComment(commentEntity);
+    });
 
     await this.audit.log(
       TaskAuditAction.COMMENT_ADDED,
       taskId,
       null,
-      {
-        commentId: createdComment.id,
-      },
+      { commentId: createdComment.id },
       comment.authorId,
       comment.authorName,
     );
@@ -345,7 +340,9 @@ export class TasksService {
       .emit('task.comment.created', payload)
       .pipe(
         catchError((err) => {
-          this.logger.error('Failed to emit task.comment.created', err);
+          this.logger.info('Failed to emit task.comment.created', {
+            error: err,
+          });
           return of(null);
         }),
       )
@@ -368,11 +365,8 @@ export class TasksService {
     const missingVars = requiredVars.filter((v) => !process.env[v]);
 
     if (missingVars.length > 0) {
-      this.logger.error('Missing environment variables', missingVars);
-      return {
-        tasks: 'down',
-        notifications: 'down',
-      };
+      this.logger.info('Missing environment variables', { missingVars });
+      return { tasks: 'down', notifications: 'down' };
     }
 
     let notifications: HealthStatus = 'down';
@@ -384,7 +378,7 @@ export class TasksService {
           .pipe(timeout(2000)),
       );
     } catch (err) {
-      this.logger.error('Notifications health check failed', err);
+      this.logger.info('Notifications health check failed', { error: err });
     }
 
     const tasksDbOk = await this.repo.checkDatabaseHealthTasksAndComments();

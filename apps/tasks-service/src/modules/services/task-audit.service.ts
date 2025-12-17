@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { TaskAuditRepository } from '../repositories/task-audit.repository';
 import { TaskAuditAction } from '@task_manager/enums';
+import { LoggerService } from '@task_manager/logger';
 
 @Injectable()
 export class TaskAuditService {
-  constructor(private readonly repo: TaskAuditRepository) {}
+  constructor(
+    private readonly repo: TaskAuditRepository,
+    private readonly logger: LoggerService,
+  ) {}
 
   async log(
     action: TaskAuditAction,
@@ -14,6 +18,13 @@ export class TaskAuditService {
     actorId?: string,
     actorName?: string,
   ) {
+    this.logger.info('Logging audit action', {
+      action,
+      taskId,
+      actorId,
+      actorName,
+    });
+
     return this.repo.create({
       action,
       taskId,
@@ -25,11 +36,15 @@ export class TaskAuditService {
   }
 
   async getByTask(taskId: string, limit = 5) {
+    this.logger.info('Fetching audit logs', { taskId, limit });
     return this.repo.findByTask(taskId, limit);
   }
 
   async healthCheckAuditDatabase(): Promise<'up' | 'down'> {
+    this.logger.info('Checking audit DB health');
     const dbAuditStatus = await this.repo.checkDatabaseHealthAudit();
-    return dbAuditStatus ? 'up' : 'down';
+    const status = dbAuditStatus ? 'up' : 'down';
+    this.logger.info('Audit DB health status', { status });
+    return status;
   }
 }

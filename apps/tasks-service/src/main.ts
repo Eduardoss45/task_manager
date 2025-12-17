@@ -28,7 +28,6 @@ async function bootstrap() {
   app.useGlobalFilters(new AllRpcExceptionsFilter());
 
   await app.listen();
-  console.log('Tasks microservice is listening to RabbitMQ...');
 }
 
 bootstrap();

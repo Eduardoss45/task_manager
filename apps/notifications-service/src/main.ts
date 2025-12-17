@@ -16,7 +16,5 @@ async function bootstrap() {
 
   await app.startAllMicroservices();
   await app.init();
-
-  console.log('Notifications listening...');
 }
 bootstrap();

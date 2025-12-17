@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TasksController } from './modules/controllers/tasks.controller';
 import { TasksService } from './modules/services/tasks.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,14 +10,12 @@ import { TasksRepository } from './modules/repositories/tasks.repository';
 import { TaskAuditRepository } from './modules/repositories/task-audit.repository';
 import { TaskAuditService } from './modules/services/task-audit.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { CqrsModule } from '@nestjs/cqrs';
+
+import { LoggerService } from '@task_manager/logger';
 
 @Module({
   imports: [
-    CqrsModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL!,
@@ -44,6 +42,12 @@ import { CqrsModule } from '@nestjs/cqrs';
     TasksRepository,
     TaskAuditRepository,
     TaskAuditService,
+    LoggerService,
+    {
+      provide: 'LOGGER_CONTEXT',
+      useValue: { service: 'tasks-service' },
+    },
   ],
+  exports: [LoggerService],
 })
 export class TasksModule {}
