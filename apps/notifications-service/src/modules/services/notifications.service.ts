@@ -1,30 +1,38 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { NotificationRepository } from '../repositories/notifications.repository';
+import { LoggerService } from '@task_manager/logger';
 
 @Injectable()
 export class NotificationsService {
-  private readonly logger = new Logger(NotificationsService.name);
-
   constructor(
     private readonly notifications: NotificationRepository,
 
     @Inject('GATEWAY_NOTIFICATIONS_CLIENT')
     private readonly gatewayClient: ClientProxy,
+
+    private readonly logger: LoggerService,
   ) {}
 
   private async persistAndDispatch(userId: string, type: string, payload: any) {
-    await this.notifications.create({
-      userId,
-      type,
-      payload,
-    });
+    try {
+      await this.notifications.create({ userId, type, payload });
+      this.logger.info(`Notification persisted`, { userId, type });
 
-    this.gatewayClient.emit('notification.dispatch', {
-      userId,
-      type,
-      payload,
-    });
+      this.gatewayClient.emit('notification.dispatch', {
+        userId,
+        type,
+        payload,
+      });
+      this.logger.info(`Notification dispatched`, { userId, type });
+    } catch (err) {
+      this.logger.error(
+        `Failed to persist or dispatch notification`,
+        err,
+        `persistAndDispatch`,
+      );
+      throw err;
+    }
   }
 
   private normalizeUserIds(
@@ -35,10 +43,13 @@ export class NotificationsService {
 
   async handleTaskCreated(event: any) {
     const { actorId, task } = event;
-
     const assignedIds = this.normalizeUserIds(task.assignedUserIds ?? []);
-
     const recipients = assignedIds.filter((id) => id !== actorId);
+
+    this.logger.info('Handling task.created event', {
+      taskId: task.id,
+      recipients,
+    });
 
     await Promise.all(
       recipients.map((userId) =>
@@ -46,7 +57,10 @@ export class NotificationsService {
       ),
     );
 
-    this.logger.log(`task.created → dispatched to ${recipients.join(', ')}`);
+    this.logger.info(`task.created dispatched`, {
+      taskId: task.id,
+      recipients,
+    });
   }
 
   async handleTaskUpdated(event: any) {
@@ -55,15 +69,12 @@ export class NotificationsService {
     const beforeAssignedIds = this.normalizeUserIds(
       before.assignedUserIds ?? [],
     );
-
     const afterAssignedIds = this.normalizeUserIds(after.assignedUserIds ?? []);
 
     const recipients = new Set<string>();
-
     const newAssignees = afterAssignedIds.filter(
       (id) => !beforeAssignedIds.includes(id),
     );
-
     newAssignees.forEach((id) => recipients.add(id));
 
     if (before.status !== after.status) {
@@ -72,25 +83,33 @@ export class NotificationsService {
 
     recipients.delete(actorId);
 
+    this.logger.info('Handling task.updated event', {
+      taskId: task.id,
+      recipients,
+    });
+
     await Promise.all(
       [...recipients].map((userId) =>
         this.persistAndDispatch(userId, 'task:updated', event),
       ),
     );
 
-    this.logger.log(
-      `task.updated → dispatched to ${[...recipients].join(', ')}`,
-    );
+    this.logger.info(`task.updated dispatched`, {
+      taskId: task.id,
+      recipients: [...recipients],
+    });
   }
 
   async handleCommentCreated(event: any) {
     const { actorId, task } = event;
-
     const assignedIds = this.normalizeUserIds(task.assignedUserIds ?? []);
-
     const recipients = new Set<string>([task.ownerId, ...assignedIds]);
-
     recipients.delete(actorId);
+
+    this.logger.info('Handling comment.new event', {
+      taskId: task.id,
+      recipients,
+    });
 
     await Promise.all(
       [...recipients].map((userId) =>
@@ -98,21 +117,39 @@ export class NotificationsService {
       ),
     );
 
-    this.logger.log(
-      `comment.new → dispatched to ${[...recipients].join(', ')}`,
-    );
+    this.logger.info(`comment.new dispatched`, {
+      taskId: task.id,
+      recipients: [...recipients],
+    });
   }
 
   async healthCheckNotificationsDatabase(): Promise<'up' | 'down'> {
+    this.logger.info('Running notifications DB health check');
+
     const requiredVars = ['RMQ_URL', 'DATABASE_URL'];
     const missingVars = requiredVars.filter((v) => !process.env[v]);
 
     if (missingVars.length > 0) {
-      console.error('Missing environment variables:', missingVars);
+      this.logger.warn(
+        `Missing environment variables: ${missingVars.join(', ')}`,
+      );
       return 'down';
     }
 
-    const dbNotificationsStatus = await this.notifications.checkDatabaseHealthNotifications();
-    return dbNotificationsStatus ? 'up' : 'down';
+    try {
+      const dbNotificationsStatus =
+        await this.notifications.checkDatabaseHealthNotifications();
+      this.logger.info('Notifications DB health check completed', {
+        status: dbNotificationsStatus ? 'up' : 'down',
+      });
+      return dbNotificationsStatus ? 'up' : 'down';
+    } catch (err) {
+      this.logger.error(
+        'Notifications DB health check failed',
+        err,
+        'healthCheckNotificationsDatabase',
+      );
+      return 'down';
+    }
   }
 }

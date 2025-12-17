@@ -1,11 +1,13 @@
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+
 import { NotificationsController } from './modules/controllers/notifications.controller';
 import { NotificationsService } from './modules/services/notifications.service';
 import { Notification } from './modules/entities/notifications.entity';
 import { NotificationRepository } from './modules/repositories/notifications.repository';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { LoggerService } from '@task_manager/logger';
 
 @Module({
   imports: [
@@ -33,6 +35,13 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     TypeOrmModule.forFeature([Notification]),
   ],
   controllers: [NotificationsController],
-  providers: [NotificationsService, NotificationRepository],
+  providers: [
+    NotificationsService,
+    NotificationRepository,
+    {
+      provide: LoggerService,
+      useValue: new LoggerService({ service: 'NotificationsService' }),
+    },
+  ],
 })
 export class NotificationsModule {}
