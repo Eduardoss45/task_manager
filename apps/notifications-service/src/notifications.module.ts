@@ -1,10 +1,10 @@
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { NotificationsController } from './notifications.controller';
-import { NotificationsService } from './notifications.service';
-import { Notification } from './entity/notifications.entity';
-import { NotificationRepository } from './entity/repository/notifications.repository';
+import { NotificationsController } from './modules/controllers/notifications.controller';
+import { NotificationsService } from './modules/services/notifications.service';
+import { Notification } from './modules/entities/notifications.entity';
+import { NotificationRepository } from './modules/repository/notifications.repository';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({

@@ -13,8 +13,8 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import { TasksRepository } from './entity/repository/tasks.repository';
-import { Task } from './entity/task.entity';
+import { TasksRepository } from '../repositories/tasks.repository';
+import { Task } from '../entities/task.entity';
 import { validate as isUUID } from 'uuid';
 import { TaskAuditService } from './task-audit.service';
 import { catchError, of } from 'rxjs';
@@ -26,7 +26,7 @@ export class TasksService {
   constructor(
     private readonly repo: TasksRepository,
     private readonly audit: TaskAuditService,
-    @Inject('NOTIFICATIONS_SERVICE') private readonly client: ClientProxy,
+    @Inject('NOTIFICATIONS_EVENTS') private readonly client: ClientProxy,
   ) {}
 
   private assertAuthorNotAssigned(
@@ -360,5 +360,19 @@ export class TasksService {
     if (!task) throw new NotFoundException('Task not found');
 
     return this.repo.findComments(taskId, page, size);
+  }
+
+  async healthCheckTasksDatabase(): Promise<'up' | 'down'> {
+    const requiredVars = ['RMQ_URL', 'DATABASE_URL'];
+    const missingVars = requiredVars.filter((v) => !process.env[v]);
+
+    if (missingVars.length > 0) {
+      console.error('Missing environment variables:', missingVars);
+      return 'down';
+    }
+
+    const dbTasksAndCommentsStatus =
+      await this.repo.checkDatabaseHealthTasksAndComments();
+    return dbTasksAndCommentsStatus ? 'up' : 'down';
   }
 }

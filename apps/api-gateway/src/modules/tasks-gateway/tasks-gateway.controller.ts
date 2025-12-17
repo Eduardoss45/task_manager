@@ -26,7 +26,7 @@ import {
 } from '@TaskManager/dtos';
 import { CreateTaskCommand, UpdateTaskCommand } from '@TaskManager/types';
 import { TasksGatewayService } from './tasks-gateway.service';
-import { JwtAuthGuard } from '../security/jwt.guard';
+import { JwtAuthGuard } from '../guards/jwt.guard';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()

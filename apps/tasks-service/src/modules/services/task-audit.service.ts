@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { TaskAuditRepository } from './entity/repository/task-audit.repository';
+import { TaskAuditRepository } from '../repositories/task-audit.repository';
 import { TaskAuditAction } from '@TaskManager/enums';
 
 @Injectable()
@@ -26,5 +26,10 @@ export class TaskAuditService {
 
   async getByTask(taskId: string, limit = 5) {
     return this.repo.findByTask(taskId, limit);
+  }
+
+  async healthCheckAuditDatabase(): Promise<'up' | 'down'> {
+    const dbAuditStatus = await this.repo.checkDatabaseHealthAudit();
+    return dbAuditStatus ? 'up' : 'down';
   }
 }

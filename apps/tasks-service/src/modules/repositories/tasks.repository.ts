@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Task } from '../task.entity';
-import { Comment } from '../comment.entity';
+import { Task } from '../entities/task.entity';
+import { Comment } from '../entities/comment.entity';
 
 @Injectable()
 export class TasksRepository {
@@ -44,5 +44,15 @@ export class TasksRepository {
       skip: (page - 1) * size,
       take: size,
     });
+  }
+
+  async checkDatabaseHealthTasksAndComments(): Promise<boolean> {
+    try {
+      await this.tasksRepo.query('SELECT 1');
+      await this.commentsRepo.query('SELECT 1');
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }

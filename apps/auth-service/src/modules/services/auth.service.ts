@@ -1,9 +1,9 @@
+import { UserRepository } from './../repositories/user.repository';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { UserRepository } from './entity/repository/user.repository';
-import { PasswordResetService } from './password.service';
+import { PasswordResetService } from './password-reset.service';
 import {
   LoginDto,
   RegisterDto,
@@ -161,9 +161,21 @@ export class AuthService {
 
   async getUsersFromAccessToken(userId: string) {
     const availableUsers = await this.getAvailableUsers(userId);
-
     return {
       availableUsers,
     };
+  }
+
+  async healthCheckAuthDatabase(): Promise<'up' | 'down'> {
+    const requiredVars = ['RMQ_URL', 'JWT_SECRET', 'DATABASE_URL'];
+    const missingVars = requiredVars.filter((v) => !process.env[v]);
+
+    if (missingVars.length > 0) {
+      console.error('Missing environment variables:', missingVars);
+      return 'down';
+    }
+
+    const dbUsersStatus = await this.users.checkDatabaseHealthUser();
+    return dbUsersStatus ? 'up' : 'down';
   }
 }

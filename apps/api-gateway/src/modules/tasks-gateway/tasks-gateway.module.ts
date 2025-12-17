@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TasksGatewayController } from './tasks-gateway.controller';
 import { AuthModule } from '../auth-gateway/auth-gateway.module';
-import { SecurityModule } from '../security/security.module';
+import { SecurityModule } from '../strategies/security.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TasksGatewayService } from './tasks-gateway.service';
@@ -28,5 +28,6 @@ import { TasksGatewayService } from './tasks-gateway.service';
   ],
   providers: [TasksGatewayService],
   controllers: [TasksGatewayController],
+  exports: [ClientsModule],
 })
 export class TasksModule {}

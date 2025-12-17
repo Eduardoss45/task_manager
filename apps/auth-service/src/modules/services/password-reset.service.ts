@@ -1,10 +1,11 @@
+import { UserRepository } from '../repositories/user.repository';
+import { PasswordResetRepository } from '../repositories/password-reset.repository';
+import { ForgotPasswordDto, ResetPasswordDto } from '@TaskManager/dtos';
+
+import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
-import * as bcrypt from 'bcrypt';
-import { UserRepository } from './entity/repository/user.repository';
-import { PasswordResetRepository } from './entity/repository/password_reset.repository';
-import { ForgotPasswordDto, ResetPasswordDto } from '@TaskManager/dtos';
-import { randomUUID } from 'crypto';
 
 @Injectable()
 export class PasswordResetService {
@@ -57,5 +58,11 @@ export class PasswordResetService {
     await this.resets.invalidateToken(reset.id);
 
     return { message: 'Password updated successfully' };
+  }
+
+  async healthCheckPasswordDatabase(): Promise<'up' | 'down'> {
+    const dbPasswordResetStatus =
+      await this.resets.checkDatabaseHealthPassword();
+    return dbPasswordResetStatus ? 'up' : 'down';
   }
 }

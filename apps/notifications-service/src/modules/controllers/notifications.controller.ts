@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern } from '@nestjs/microservices';
-import { NotificationsService } from './notifications.service';
+import { NotificationsService } from '../services/notifications.service';
 
 @Controller()
 export class NotificationsController {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TaskAuditLog } from '../task-audit-log.entity';
+import { TaskAuditLog } from '../entities/task-audit-log.entity';
 
 @Injectable()
 export class TaskAuditRepository {
@@ -20,5 +20,14 @@ export class TaskAuditRepository {
       order: { createdAt: 'DESC' },
       take: limit,
     });
+  }
+
+  async checkDatabaseHealthAudit(): Promise<boolean> {
+    try {
+      await this.repo.query('SELECT 1');
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }

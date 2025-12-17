@@ -1,18 +1,20 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TasksController } from './tasks.controller';
-import { TasksService } from './tasks.service';
+import { TasksController } from './modules/controllers/tasks.controller';
+import { TasksService } from './modules/services/tasks.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Task } from './entity/task.entity';
-import { Comment } from './entity/comment.entity';
-import { TaskAuditLog } from './entity/task-audit-log.entity';
-import { TasksRepository } from './entity/repository/tasks.repository';
-import { TaskAuditRepository } from './entity/repository/task-audit.repository';
-import { TaskAuditService } from './task-audit.service';
+import { Task } from './modules/entities/task.entity';
+import { Comment } from './modules/entities/comment.entity';
+import { TaskAuditLog } from './modules/entities/task-audit-log.entity';
+import { TasksRepository } from './modules/repositories/tasks.repository';
+import { TaskAuditRepository } from './modules/repositories/task-audit.repository';
+import { TaskAuditService } from './modules/services/task-audit.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
   imports: [
+    CqrsModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -25,15 +27,12 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     TypeOrmModule.forFeature([Task, Comment, TaskAuditLog]),
     ClientsModule.registerAsync([
       {
-        name: 'NOTIFICATIONS_SERVICE',
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
+        name: 'NOTIFICATIONS_EVENTS',
+        useFactory: () => ({
           transport: Transport.RMQ,
           options: {
-            urls: [config.get<string>('RMQ_URL')!],
-            queue: 'notifications_queue',
-            queueOptions: { durable: true },
+            urls: [process.env.RMQ_URL!],
+            queue: 'notifications_events_queue',
           },
         }),
       },

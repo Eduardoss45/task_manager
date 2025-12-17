@@ -1,6 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
-import { TasksService } from './tasks.service';
+import { TasksService } from '../services/tasks.service';
+import { TaskAuditService } from '../services/task-audit.service';
 import {
   CreateTaskDto,
   UpdateTaskDto,
@@ -9,7 +10,10 @@ import {
 
 @Controller()
 export class TasksController {
-  constructor(private readonly tasksService: TasksService) {}
+  constructor(
+    private readonly tasksService: TasksService,
+    private readonly auditService: TaskAuditService,
+  ) {}
 
   @MessagePattern({ cmd: 'getTasks' })
   getTasks(data: { page: number; size: number }) {
@@ -48,5 +52,15 @@ export class TasksController {
   @MessagePattern({ cmd: 'getComments' })
   getComments(data: { taskId: string; page: number; size: number }) {
     return this.tasksService.getComments(data.taskId, data.page, data.size);
+  }
+
+  @MessagePattern({ cmd: 'tasks-start' })
+  async tasksHealthCheck() {
+    const tasksRes = await this.tasksService.healthCheckTasksDatabase();
+    const auditsRes = await this.auditService.healthCheckAuditDatabase();
+    if (tasksRes === 'up' && auditsRes === 'up') {
+      return 'up';
+    }
+    return 'down';
   }
 }

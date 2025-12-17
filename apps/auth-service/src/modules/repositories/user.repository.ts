@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
-import { User } from '../user.entity';
+import { User } from '../entities/user.entity';
 
 @Injectable()
 export class UserRepository {
@@ -36,5 +36,14 @@ export class UserRepository {
       where: { id: Not(excludeUserId) },
       select: ['id', 'username'],
     });
+  }
+
+  async checkDatabaseHealthUser(): Promise<boolean> {
+    try {
+      await this.repo.query('SELECT 1');
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }

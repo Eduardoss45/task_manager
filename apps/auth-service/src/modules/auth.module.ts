@@ -1,14 +1,15 @@
+import { UserRepository } from './repositories/user.repository';
+import { PasswordResetRepository } from './repositories/password-reset.repository';
+import { AuthController } from './controllers/auth.controller';
+import { AuthService } from './services/auth.service';
+import { User } from './entities/user.entity';
+import { PasswordReset } from './entities/password-reset.entity';
+import { PasswordResetService } from './services/password-reset.service';
+
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { UserRepository } from './entity/repository/user.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
-import { User } from './entity/user.entity';
-import { PasswordReset } from './entity/password_resets.entity';
-import { PasswordResetRepository } from './entity/repository/password_reset.repository';
-import { PasswordResetService } from './password.service';
 
 @Module({
   imports: [

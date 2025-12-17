@@ -12,7 +12,7 @@ import { AuthGatewayService } from './auth-gateway.service';
 import { LoginDto, RegisterDto, AssignedUserDto } from '@TaskManager/dtos';
 import { Response, Request } from 'express';
 import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../security/jwt.guard';
+import { JwtAuthGuard } from '../guards/jwt.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -134,11 +134,35 @@ export class AuthGatewayController {
   }
 
   @Post('forgot-password')
+  @ApiOperation({ summary: 'Solicita redefinição de senha' })
+  @ApiResponse({
+    status: 201,
+    description: 'Token de redefinição enviado com sucesso',
+    schema: {
+      example: { message: 'Email de redefinição enviado' },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Email ou username inválido',
+  })
   async forgotPassword(@Body() body: { email: string; username: string }) {
     return this.auth.forgotPassword(body);
   }
 
   @Post('reset-password')
+  @ApiOperation({ summary: 'Redefine a senha usando token enviado por email' })
+  @ApiResponse({
+    status: 200,
+    description: 'Senha redefinida com sucesso',
+    schema: {
+      example: { message: 'Senha redefinida com sucesso' },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Token inválido ou expirado',
+  })
   async resetPassword(@Body() body: { token: string; newPassword: string }) {
     return this.auth.resetPassword(body);
   }
