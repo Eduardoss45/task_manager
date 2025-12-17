@@ -58,6 +58,40 @@ export function useUserConnect() {
     }
   }
 
+  async function forgotPassword(data: { username: string; email: string }) {
+    setLoading(true);
+    try {
+      const res = await api.post("api/auth/forgot-password", data);
+
+      if (res.data?.resetToken) {
+        toast.success("Token gerado com sucesso");
+        return res.data.resetToken;
+      }
+
+      toast.info("Se o usuário existir, um token foi gerado");
+      return null;
+    } catch {
+      toast.error("Erro ao solicitar reset de senha");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function resetPassword(data: { token: string; newPassword: string }) {
+    setLoading(true);
+    try {
+      await api.post("api/auth/reset-password", data);
+      toast.success("Senha atualizada com sucesso");
+      return true;
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message ?? "Erro ao resetar senha");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function logout() {
     try {
       await api.post("/auth/logout");
@@ -87,6 +121,8 @@ export function useUserConnect() {
     login,
     register,
     logout,
+    forgotPassword,
+    resetPassword,
     bootstrapSession,
     isAuthenticated: !!user,
   };
