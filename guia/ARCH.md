@@ -13,7 +13,6 @@ api-gateway -> auth-service -> task-service -> notifications-service
 - Winston
 - Testes Unitários
 - Swagger/OpenAPI (**dtos, controllers**)
-- .env.example (**para cada diretório**)
 - Docker
 - .gitignore
 
