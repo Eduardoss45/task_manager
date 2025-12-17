@@ -10,6 +10,7 @@ import {
   ForgotPasswordDto,
   ResetPasswordDto,
 } from '@task_manager/dtos';
+import { LoggerService } from '@task_manager/logger';
 
 @Injectable()
 export class AuthService {
@@ -17,9 +18,12 @@ export class AuthService {
     private readonly users: UserRepository,
     private readonly jwtService: JwtService,
     private readonly passwordReset: PasswordResetService,
+    private readonly logger: LoggerService,
   ) {}
 
   private async getAvailableUsers(userId: string) {
+    this.logger.info('Fetching available users', { userId });
+
     const users = await this.users.findAvailableUsers(userId);
 
     return users.map((u) => ({
@@ -33,6 +37,8 @@ export class AuthService {
     email: string;
     username: string;
   }) {
+    this.logger.info('Generating JWT tokens', { userId: user.id });
+
     const payload = {
       sub: user.id,
       email: user.email,
@@ -40,7 +46,6 @@ export class AuthService {
     };
 
     const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
-
     const refreshToken = this.jwtService.sign(
       { sub: user.id },
       { expiresIn: '7d' },
@@ -50,17 +55,27 @@ export class AuthService {
   }
 
   async forgotPassword(data: ForgotPasswordDto) {
+    this.logger.info('Forgot password request', { email: data.email });
+
     return this.passwordReset.generate(data);
   }
 
   async resetPassword(data: ResetPasswordDto) {
+    this.logger.info('Reset password attempt');
+
     return this.passwordReset.reset(data);
   }
 
   async register(data: RegisterDto) {
+    this.logger.info('Register attempt', { email: data.email });
+
     const exists = await this.users.findByEmail(data.email);
 
     if (exists) {
+      this.logger.info('Register failed - email already in use', {
+        email: data.email,
+      });
+
       throw new RpcException({
         statusCode: 409,
         message: 'Email already in use',
@@ -74,6 +89,8 @@ export class AuthService {
       username: data.username,
       password: hashed,
     });
+
+    this.logger.info('User created', { userId: user.id });
 
     const tokens = await this.generateTokens(user);
 
@@ -92,22 +109,35 @@ export class AuthService {
   }
 
   async login(data: LoginDto) {
+    this.logger.info('Login attempt', { email: data.email });
+
     const user = await this.users.findByEmail(data.email);
 
     if (!user) {
+      this.logger.info('Login failed - user not found', {
+        email: data.email,
+      });
+
       throw new RpcException({ statusCode: 404, message: 'User not found' });
     }
 
     const valid = await bcrypt.compare(data.password, user.password);
 
     if (!valid) {
+      this.logger.info('Login failed - invalid credentials', {
+        userId: user.id,
+      });
+
       throw new RpcException({
         statusCode: 400,
         message: 'Invalid credentials',
       });
     }
 
+    this.logger.info('User authenticated', { userId: user.id });
+
     const tokens = await this.generateTokens(user);
+
     const refreshHash = await bcrypt.hash(tokens.refreshToken, 10);
     await this.users.updateRefreshToken(user.id, refreshHash);
 
@@ -122,29 +152,35 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string) {
+    this.logger.info('Refresh token attempt');
+
     try {
       const payload = this.jwtService.verify<{ sub: string }>(refreshToken);
-
       const user = await this.users.findById(payload.sub);
 
       if (!user || !user.refreshTokenHash) {
+        this.logger.info('Refresh failed - missing token hash', {
+          userId: payload.sub,
+        });
+
         throw new UnauthorizedException('Access denied');
       }
 
       const valid = await bcrypt.compare(refreshToken, user.refreshTokenHash);
 
       if (!valid) {
+        this.logger.info('Refresh failed - invalid refresh token', {
+          userId: user.id,
+        });
+
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      const tokens = await this.generateTokens({
-        id: user.id,
-        email: user.email,
-        username: user.username,
-      });
-
+      const tokens = await this.generateTokens(user);
       const newRefreshHash = await bcrypt.hash(tokens.refreshToken, 10);
       await this.users.updateRefreshToken(user.id, newRefreshHash);
+
+      this.logger.info('Token refreshed', { userId: user.id });
 
       return {
         user: {
@@ -155,27 +191,35 @@ export class AuthService {
         ...tokens,
       };
     } catch {
+      this.logger.info('Refresh token rejected');
+
       throw new UnauthorizedException('Invalid token');
     }
   }
 
   async getUsersFromAccessToken(userId: string) {
     const availableUsers = await this.getAvailableUsers(userId);
-    return {
-      availableUsers,
-    };
+
+    return { availableUsers };
   }
 
   async healthCheckAuthDatabase(): Promise<'up' | 'down'> {
+    this.logger.info('Auth DB health check started');
+
     const requiredVars = ['RMQ_URL', 'JWT_SECRET', 'DATABASE_URL'];
     const missingVars = requiredVars.filter((v) => !process.env[v]);
 
     if (missingVars.length > 0) {
-      console.error('Missing environment variables:', missingVars);
+      this.logger.info('Missing environment variables', { missingVars });
       return 'down';
     }
 
     const dbUsersStatus = await this.users.checkDatabaseHealthUser();
+
+    this.logger.info('Auth DB health check result', {
+      status: dbUsersStatus ? 'up' : 'down',
+    });
+
     return dbUsersStatus ? 'up' : 'down';
   }
 }

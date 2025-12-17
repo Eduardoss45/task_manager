@@ -15,6 +15,7 @@ async function bootstrap() {
       },
     },
   );
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -22,7 +23,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
   await app.listen();
-  console.log('Auth microservice is listening to RabbitMQ...');
 }
+
 bootstrap();
