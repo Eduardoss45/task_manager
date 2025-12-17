@@ -19,7 +19,10 @@ async function bootstrap() {
   const app = await NestFactory.create(ApiModule);
 
   app.setGlobalPrefix('api');
-  app.enableCors({ origin: 'http://localhost:5173', credentials: true });
+  app.enableCors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  });
 
   app.use(cookieParser());
   app.useGlobalPipes(
@@ -33,8 +36,8 @@ async function bootstrap() {
   app.useGlobalInterceptors(new RmqExceptionInterceptor());
 
   const config = new DocumentBuilder()
-    .setTitle('Jungle Gaming API')
-    .setDescription('Documentação da API do Jungle Gaming')
+    .setTitle('Task Manager API')
+    .setDescription('Documentação da API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

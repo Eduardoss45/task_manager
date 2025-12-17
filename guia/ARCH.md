@@ -10,15 +10,12 @@ api-gateway -> auth-service -> task-service -> notifications-service
 
 ## Implemente
 
-- Health Checks (apenas **get**)
-  - Banco de dados (**SELECT 1**)
-  - Configurações críticas (**checar variáveis .env**)
 - Winston
 - Testes Unitários
 - Swagger/OpenAPI (**dtos, controllers**)
 - .env.example (**para cada diretório**)
-- Redefinir senha no frontend
 - Docker
+- .gitignore
 
 ## Diretórios
 
@@ -82,8 +79,13 @@ export class AuthService {
 }
 ```
 
-### Documentar melhorias
+### Documentar
 
-- Validação de Variáveis de Ambiente com Joi
-- Nodemailer ou similares para envio de emails
-- Redis para armazenar cache
+- Melhorias:
+  - Validação de Variáveis de Ambiente com Joi
+  - Nodemailer ou similares para envio de emails
+  - Redis para armazenar cache
+  - Sistema de calendario no frontend
+
+- Informações:
+  - Fluxo de health-checks
