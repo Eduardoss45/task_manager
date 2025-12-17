@@ -1,3 +1,4 @@
+import { HealthStatus, TasksHealthResponse } from '@TaskManager/types';
 import {
   CreateTaskDto,
   UpdateTaskDto,
@@ -362,19 +363,22 @@ export class TasksService {
     return this.repo.findComments(taskId, page, size);
   }
 
-  async healthCheckTasksDatabase(): Promise<'up' | 'down'> {
+  async healthCheckTasksDatabase(): Promise<TasksHealthResponse> {
     const requiredVars = ['RMQ_URL', 'DATABASE_URL'];
     const missingVars = requiredVars.filter((v) => !process.env[v]);
 
     if (missingVars.length > 0) {
       this.logger.error('Missing environment variables', missingVars);
-      return 'down';
+      return {
+        tasks: 'down',
+        notifications: 'down',
+      };
     }
 
-    let notificationsRes: 'up' | 'down' = 'down';
+    let notifications: HealthStatus = 'down';
 
     try {
-      notificationsRes = await firstValueFrom(
+      notifications = await firstValueFrom(
         this.client
           .send({ cmd: 'notifications-start' }, {})
           .pipe(timeout(2000)),
@@ -383,13 +387,11 @@ export class TasksService {
       this.logger.error('Notifications health check failed', err);
     }
 
-    const dbTasksAndCommentsStatus =
-      await this.repo.checkDatabaseHealthTasksAndComments();
+    const tasksDbOk = await this.repo.checkDatabaseHealthTasksAndComments();
 
-    if (dbTasksAndCommentsStatus === true && notificationsRes === 'up') {
-      return 'up';
-    }
-
-    return 'down';
+    return {
+      tasks: tasksDbOk ? 'up' : 'down',
+      notifications,
+    };
   }
 }

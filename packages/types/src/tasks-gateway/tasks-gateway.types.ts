@@ -9,3 +9,10 @@ export type UpdateTaskCommand = UpdateTaskDto & {
   actorId: string;
   actorName: string;
 };
+
+export type HealthStatus = "up" | "down";
+
+export type TasksHealthResponse = {
+  tasks: HealthStatus;
+  notifications: HealthStatus;
+};

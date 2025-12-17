@@ -12,9 +12,14 @@ export class HealthService {
   ) {}
 
   async checkReadiness() {
+    const auth = await this.checkAuth(this.authClient);
+    const deps = await this.checkTasks(this.tasksClient);
+
     return {
-      auth: await this.checkAuth(this.authClient),
-      tasks_and_notifications: await this.checkTasks(this.tasksClient),
+      auth,
+      tasks: deps.tasks,
+      notifications: deps.notifications,
+      audits: deps.audits,
       gateway: this.notificationsGateway.server ? 'up' : 'down',
     };
   }
@@ -32,12 +37,17 @@ export class HealthService {
 
   private async checkTasks(client: ClientProxy) {
     try {
-      const response = await firstValueFrom(
-        client.send({ cmd: 'tasks-start' }, {}).pipe(timeout(2000)),
-      );
-      return response === 'up' ? 'up' : 'down';
+      return await firstValueFrom<{
+        tasks: 'up' | 'down';
+        notifications: 'up' | 'down';
+        audits: 'up' | 'down';
+      }>(client.send({ cmd: 'tasks-start' }, {}).pipe(timeout(2000)));
     } catch {
-      return 'down';
+      return {
+        tasks: 'down',
+        notifications: 'down',
+        audits: 'down',
+      };
     }
   }
 }

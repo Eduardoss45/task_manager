@@ -58,9 +58,11 @@ export class TasksController {
   async tasksHealthCheck() {
     const tasksRes = await this.tasksService.healthCheckTasksDatabase();
     const auditsRes = await this.auditService.healthCheckAuditDatabase();
-    if (tasksRes === 'up' && auditsRes === 'up') {
-      return 'up';
-    }
-    return 'down';
+
+    return {
+      tasks: tasksRes.tasks,
+      notifications: tasksRes.notifications,
+      audits: auditsRes,
+    };
   }
 }
