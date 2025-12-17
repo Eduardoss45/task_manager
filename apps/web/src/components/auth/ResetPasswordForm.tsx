@@ -8,8 +8,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export function ResetPasswordForm({ token }: { token?: string }) {
+export function ResetPasswordForm({ token, onSuccess }: { token: string; onSuccess: () => void }) {
   const { resetPassword, loading } = useUserConnect();
+
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: { token },
@@ -22,14 +23,14 @@ export function ResetPasswordForm({ token }: { token?: string }) {
     });
 
     if (ok) {
-      form.reset();
+      onSuccess();
     }
   }
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 my-4">
-      <Input type="hidden" {...form.register("token")} />
       <Input type="password" placeholder="Nova senha" {...form.register("newPassword")} />
+
       <Input type="password" placeholder="Confirmar senha" {...form.register("confirmPassword")} />
 
       <Button className="w-full" type="submit" disabled={loading}>

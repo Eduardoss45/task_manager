@@ -92,6 +92,7 @@ export function useUserConnect() {
     }
   }
 
+
   async function logout() {
     try {
       await api.post("/auth/logout");

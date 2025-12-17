@@ -1,4 +1,4 @@
-import { Modal } from "@/components/tasks/Modal";
+import { Modal } from "@/components/layout/Modal";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
