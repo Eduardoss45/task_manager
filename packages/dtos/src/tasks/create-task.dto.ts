@@ -14,19 +14,22 @@ import { AssignedUserDto } from "../auth/assigned-user.dto";
 import { Type } from "class-transformer";
 
 export class CreateTaskDto {
-  @ApiProperty({ example: "Estudar NestJS" })
+  @ApiProperty({ example: "Estudar NestJS", description: "Título da tarefa" })
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
   title: string = "";
 
-  @ApiPropertyOptional({ example: "Ler documentação oficial" })
+  @ApiPropertyOptional({
+    example: "Ler documentação oficial",
+    description: "Descrição detalhada da tarefa",
+  })
   @Transform(({ value }) => value?.trim())
   @IsOptional()
   description?: string;
 
   @ApiPropertyOptional({
     example: "2025-12-31",
-    description: "Data limite da tarefa",
+    description: "Data limite da tarefa (deve ser futura)",
   })
   @IsOptional()
   @IsDateString()
@@ -36,6 +39,7 @@ export class CreateTaskDto {
   @ApiPropertyOptional({
     enum: TaskPriority,
     example: TaskPriority.MEDIUM,
+    description: "Prioridade da tarefa",
   })
   @IsOptional()
   @IsEnum(TaskPriority)
@@ -44,6 +48,7 @@ export class CreateTaskDto {
   @ApiPropertyOptional({
     enum: TaskStatus,
     example: TaskStatus.TODO,
+    description: "Status da tarefa",
   })
   @IsOptional()
   @IsEnum(TaskStatus)
@@ -52,9 +57,10 @@ export class CreateTaskDto {
   @ApiPropertyOptional({
     type: [AssignedUserDto],
     example: [
-      { username: "john_doe", userId: "uuid-user-1" },
-      { username: "jane_doe", userId: "uuid-user-2" },
+      { username: "john_doe", userId: "987e6543-e21b-12d3-a456-426655440000" },
+      { username: "jane_doe", userId: "111e1111-e11b-12d3-a456-426614174001" },
     ],
+    description: "Usuários atribuídos à tarefa",
   })
   @IsOptional()
   @IsArray()
