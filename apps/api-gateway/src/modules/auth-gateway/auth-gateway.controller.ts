@@ -16,10 +16,22 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AuthGatewayService } from './auth-gateway.service';
-import { LoginDto, RegisterDto, AssignedUserDto } from '@task_manager/dtos';
+import {
+  LoginDto,
+  RegisterDto,
+  AssignedUserDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+} from '@task_manager/dtos';
 import { Response, Request } from 'express';
 import { JwtAuthGuard } from '../guards/jwt.guard';
 import { LoggerService } from '@task_manager/logger';
+import {
+  ForgotPasswordCommand,
+  LoginCommand,
+  RegisterCommand,
+  ResetPasswordCommand,
+} from '@task_manager/types';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -54,15 +66,28 @@ export class AuthGatewayController {
   }
 
   @Post('register')
-  @ApiOperation({ summary: 'Registro de novo usuário' })
+  @ApiOperation({
+    summary: 'Registra um novo usuário',
+    description:
+      'Endpoint de gateway. Apenas encaminha o comando de registro para o auth-service via mensageria.',
+  })
   @ApiBody({ type: RegisterDto })
-  async register(@Body() body: RegisterDto, @Res() res: Response) {
+  @ApiOkResponse({
+    description: 'Usuário registrado com sucesso',
+  })
+  async register(@Body() dto: RegisterDto, @Res() res: Response) {
+    const command: RegisterCommand = {
+      email: dto.email,
+      username: dto.username,
+      password: dto.password,
+    };
+
     this.logger.info('Register request received', {
-      email: body.email,
-      username: body.username,
+      email: dto.email,
+      username: dto.username,
     });
 
-    const result = await this.auth.register(body);
+    const result = await this.auth.register(command);
 
     this.logger.info('User registered successfully', {
       userId: result.user.id,
@@ -72,19 +97,30 @@ export class AuthGatewayController {
 
     return res.status(201).json({
       user: result.user,
-      availableUsers: result.availableUsers ?? [],
     });
   }
 
   @Post('login')
-  @ApiOperation({ summary: 'Login do usuário' })
+  @ApiOperation({
+    summary: 'Autentica o usuário',
+    description:
+      'Gateway de autenticação. Gera cookies HTTP-only após resposta do auth-service.',
+  })
   @ApiBody({ type: LoginDto })
-  async login(@Body() body: LoginDto, @Res() res: Response) {
+  @ApiOkResponse({
+    description: 'Usuário autenticado com sucesso',
+  })
+  async login(@Body() dto: LoginDto, @Res() res: Response) {
+    const command: LoginCommand = {
+      email: dto.email,
+      password: dto.password,
+    };
+
     this.logger.info('Login attempt', {
-      email: body.email,
+      email: dto.email,
     });
 
-    const result = await this.auth.login(body);
+    const result = await this.auth.login(command);
 
     this.logger.info('User authenticated', {
       userId: result.user.id,
@@ -94,12 +130,18 @@ export class AuthGatewayController {
 
     return res.json({
       user: result.user,
-      availableUsers: result.availableUsers,
     });
   }
 
   @Post('refresh')
-  @ApiOperation({ summary: 'Renova o access token usando refresh token' })
+  @ApiOperation({
+    summary: 'Renova o access token',
+    description:
+      'Utiliza o refresh token armazenado em cookie HTTP-only para solicitar novos tokens ao auth-service.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Refresh token ausente ou inválido',
+  })
   async refresh(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies.refreshToken;
 
@@ -123,42 +165,72 @@ export class AuthGatewayController {
 
     return res.json({
       user: result.user,
-      availableUsers: result.availableUsers,
     });
   }
 
   @Post('forgot-password')
-  @ApiOperation({ summary: 'Solicita redefinição de senha' })
-  async forgotPassword(@Body() body: { email: string; username: string }) {
+  @ApiOperation({
+    summary: 'Solicita redefinição de senha',
+    description:
+      'Encaminha solicitação de redefinição de senha ao auth-service. Sempre retorna resposta genérica por segurança.',
+  })
+  @ApiBody({ type: ForgotPasswordDto })
+  @ApiOkResponse({
+    description: 'Solicitação processada',
+  })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    const command: ForgotPasswordCommand = {
+      email: dto.email,
+      username: dto.username,
+    };
+
     this.logger.info('Forgot password requested', {
-      email: body.email,
-      username: body.username,
+      email: dto.email,
+      username: dto.username,
     });
 
-    return this.auth.forgotPassword(body);
+    return this.auth.forgotPassword(command);
   }
 
   @Post('reset-password')
-  @ApiOperation({ summary: 'Redefine a senha usando token enviado por email' })
-  async resetPassword(@Body() body: { token: string; newPassword: string }) {
+  @ApiOperation({
+    summary: 'Redefine a senha do usuário',
+    description:
+      'Encaminha token e nova senha para o auth-service validar e atualizar a senha.',
+  })
+  @ApiBody({ type: ResetPasswordDto })
+  @ApiOkResponse({
+    description: 'Senha redefinida com sucesso',
+  })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    const command: ResetPasswordCommand = {
+      token: dto.token,
+      newPassword: dto.newPassword,
+    };
+
     this.logger.info('Reset password attempt', {
       tokenProvided: true,
     });
 
-    return this.auth.resetPassword(body);
+    return this.auth.resetPassword(command);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('users')
-  @ApiOperation({ summary: 'Obtém os usuários disponíveis para atribuição' })
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Lista usuários disponíveis para atribuição',
+    description:
+      'Endpoint protegido. Retorna usuários disponíveis para atribuição em tarefas.',
+  })
   @ApiOkResponse({
-    description: 'Lista de usuários disponíveis',
+    description: 'Lista de usuários',
     type: AssignedUserDto,
+    isArray: true,
   })
   @ApiUnauthorizedResponse({
-    description: 'Access token inválido ou ausente',
+    description: 'Token JWT inválido ou ausente',
   })
-  @ApiBearerAuth()
   async users(@Req() req: any, @Res() res: Response) {
     const userId = req.user.userId;
 

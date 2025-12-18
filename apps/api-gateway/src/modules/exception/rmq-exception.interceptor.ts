@@ -18,7 +18,6 @@ export class RmqExceptionInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       catchError((err) => {
-        // Erro direto do microservice
         if (err?.statusCode && err?.message) {
           this.logger.info('RPC error received', {
             statusCode: err.statusCode,
@@ -30,7 +29,6 @@ export class RmqExceptionInterceptor implements NestInterceptor {
           );
         }
 
-        // Erro encapsulado em response
         if (err?.response?.statusCode && err?.response?.message) {
           this.logger.info('RPC error response received', {
             statusCode: err.response.statusCode,
@@ -42,7 +40,6 @@ export class RmqExceptionInterceptor implements NestInterceptor {
           );
         }
 
-        // Erro genérico
         if (typeof err?.message === 'string') {
           this.logger.info('Unhandled RPC error', {
             message: err.message,

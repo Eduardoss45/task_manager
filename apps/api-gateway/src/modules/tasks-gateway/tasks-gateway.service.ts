@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { CreateCommentCommand, CreateTaskCommand, UpdateTaskCommand } from '@task_manager/types';
 import {
   CreateCommentDto,
   UpdateTaskDto,
@@ -18,7 +19,7 @@ export class TasksGatewayService {
   }
 
   async createTask(
-    task: CreateTaskDto & { authorId: string; authorName: string },
+    task: CreateTaskCommand & { authorId: string; authorName: string },
   ) {
     return firstValueFrom(this.client.send({ cmd: 'createTask' }, task));
   }

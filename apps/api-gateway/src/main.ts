@@ -13,6 +13,9 @@ import {
   CreateTaskDto,
   UpdateTaskDto,
   CreateCommentDto,
+  AssignedUserDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
 } from '@task_manager/dtos';
 
 async function bootstrap() {
@@ -53,6 +56,9 @@ async function bootstrap() {
         CreateTaskDto,
         UpdateTaskDto,
         CreateCommentDto,
+        AssignedUserDto,
+        ForgotPasswordDto,
+        ResetPasswordDto,
       ],
     });
 

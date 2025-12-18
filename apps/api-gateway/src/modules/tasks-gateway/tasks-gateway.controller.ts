@@ -1,4 +1,3 @@
-import { Payload } from '@nestjs/microservices';
 import {
   Controller,
   Get,
@@ -24,7 +23,11 @@ import {
   UpdateTaskDto,
   CreateTaskDto,
 } from '@task_manager/dtos';
-import { CreateTaskCommand, UpdateTaskCommand } from '@task_manager/types';
+import {
+  CreateCommentCommand,
+  CreateTaskCommand,
+  UpdateTaskCommand,
+} from '@task_manager/types';
 import { TasksGatewayService } from './tasks-gateway.service';
 import { JwtAuthGuard } from '../guards/jwt.guard';
 
@@ -47,14 +50,14 @@ export class TasksGatewayController {
   @Post()
   @ApiOperation({ summary: 'Cria uma nova tarefa' })
   @ApiResponse({ status: 201, description: 'Tarefa criada com sucesso' })
-  async createTask(@Body() body: CreateTaskDto, @Req() req: any) {
-    const payload: CreateTaskCommand = {
-      ...body,
+  async createTask(@Body() dto: CreateTaskDto, @Req() req: any) {
+    const command: CreateTaskCommand = {
+      ...dto,
       authorId: req.user.userId,
       authorName: req.user.username,
     };
 
-    return this.tasksService.createTask(payload);
+    return this.tasksService.createTask(command);
   }
 
   @Get(':id')
@@ -72,16 +75,16 @@ export class TasksGatewayController {
   @ApiResponse({ status: 200, description: 'Tarefa atualizada' })
   async updateTask(
     @Param('id') id: string,
-    @Body() body: UpdateTaskDto,
+    @Body() dto: UpdateTaskDto,
     @Req() req: any,
   ) {
-    const payload: UpdateTaskCommand = {
-      ...body,
+    const command: UpdateTaskCommand = {
+      ...dto,
       actorId: req.user.userId,
       actorName: req.user.username,
     };
 
-    return this.tasksService.updateTask(id, payload);
+    return this.tasksService.updateTask(id, command);
   }
 
   @Delete(':id')
@@ -98,16 +101,16 @@ export class TasksGatewayController {
   @ApiResponse({ status: 201, description: 'Comentário criado' })
   async createComment(
     @Param('id') id: string,
-    @Body() body: CreateCommentDto,
+    @Body() dto: CreateCommentDto,
     @Req() req: any,
   ) {
-    const payload: CreateCommentDto = {
-      ...body,
+    const command: CreateCommentCommand = {
+      ...dto,
       authorId: req.user.userId,
       authorName: req.user.username,
     };
 
-    return this.tasksService.createComment(id, payload);
+    return this.tasksService.createComment(id, command);
   }
 
   @Get(':id/comments')

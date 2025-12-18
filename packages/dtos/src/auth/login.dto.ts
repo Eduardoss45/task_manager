@@ -5,7 +5,7 @@ import { Transform } from "class-transformer";
 export class LoginDto {
   @ApiProperty({
     example: "user@email.com",
-    description: "Email do usuário",
+    description: "Email do usuário cadastrado",
   })
   @Transform(({ value }) => value.trim().toLowerCase())
   @IsEmail()

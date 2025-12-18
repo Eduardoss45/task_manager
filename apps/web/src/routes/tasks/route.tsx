@@ -6,9 +6,8 @@ export const Route = createFileRoute("/tasks")({
 
 function TasksLayout() {
   return (
-    <div className="min-h-screen px-2 py-3 sm:px-4 sm:py-4 md:p-6 bg-gray-50">
+    <div className="min-h-screen py-3 sm:px-4 sm:py-4 md:p-6 bg-gray-50 container mx-auto px-4">
       <Outlet />
     </div>
   );
 }
-

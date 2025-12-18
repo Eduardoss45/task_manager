@@ -10,7 +10,6 @@ api-gateway -> auth-service -> task-service -> notifications-service
 
 ## Implemente
 
-- Winston
 - Testes Unitários
 - Swagger/OpenAPI (**dtos, controllers**)
 - Docker
@@ -55,10 +54,10 @@ changePassword(
 }
 ```
 
-## Interfaces
+## Interfaces/Types
 
 ```js
-export interface ChangePasswordCommand {
+export type ChangePasswordCommand = {
   userId: string;
   oldPassword: string;
   newPassword: string;

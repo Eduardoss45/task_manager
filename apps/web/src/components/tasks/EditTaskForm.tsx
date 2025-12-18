@@ -2,10 +2,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { editTaskSchema } from "@/lib/validators/tasks/taskValidators";
 import type { TaskPriority, TaskStatus } from "@/lib/validators/tasks/taskValidators";
-
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Controller } from "react-hook-form";
 import {
   Select,
   SelectContent,
@@ -83,7 +85,40 @@ export function EditTaskForm({ task, availableUsers, onSuccess }: EditTaskFormPr
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <Input {...form.register("title")} placeholder="Título" />
       <Textarea {...form.register("description")} placeholder="Descrição" />
-      <Input type="date" {...form.register("dueDate")} />
+      <Controller
+        name="dueDate"
+        control={form.control}
+        render={({ field }) => (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                className="
+            w-full h-10 flex items-center justify-center
+            rounded-md
+            bg-zinc-950 text-zinc-100
+            border border-zinc-800
+            text-sm font-medium
+            placeholder:text-zinc-400
+            focus-visible:ring-2 focus-visible:ring-blue-500
+            cursor-pointer
+          "
+              >
+                {field.value ? new Date(field.value).toLocaleDateString() : "Selecione uma data"}
+              </Button>
+            </PopoverTrigger>
+
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={field.value ? new Date(field.value) : undefined}
+                onSelect={(date: Date | undefined) => date && field.onChange(date.toISOString())}
+                disabled={(date: Date) => date < new Date()}
+              />
+            </PopoverContent>
+          </Popover>
+        )}
+      />
 
       <div className="grid grid-cols-2 gap-3">
         <Select

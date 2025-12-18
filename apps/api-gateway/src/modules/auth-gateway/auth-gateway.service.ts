@@ -1,8 +1,13 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { LoginDto, RegisterDto } from '@task_manager/dtos';
 import { LoggerService } from '@task_manager/logger';
+import {
+  ForgotPasswordCommand,
+  LoginCommand,
+  RegisterCommand,
+  ResetPasswordCommand,
+} from '@task_manager/types';
 
 @Injectable()
 export class AuthGatewayService {
@@ -11,16 +16,14 @@ export class AuthGatewayService {
     private readonly logger: LoggerService,
   ) {}
 
-  async login(data: LoginDto) {
+  async login(command: LoginCommand) {
     this.logger.info('Sending login request to auth-service');
-
-    return firstValueFrom(this.client.send({ cmd: 'login' }, data));
+    return firstValueFrom(this.client.send({ cmd: 'login' }, command));
   }
 
-  async register(data: RegisterDto) {
+  async register(command: RegisterCommand) {
     this.logger.info('Sending register request to auth-service');
-
-    return firstValueFrom(this.client.send({ cmd: 'register' }, data));
+    return firstValueFrom(this.client.send({ cmd: 'register' }, command));
   }
 
   async refresh(refreshToken: string) {
@@ -31,18 +34,20 @@ export class AuthGatewayService {
     );
   }
 
-  async forgotPassword(data: { email: string; username: string }) {
+  async forgotPassword(command: ForgotPasswordCommand) {
     this.logger.info('Sending forgot-password request to auth-service', {
-      email: data.email,
+      email: command.email,
     });
 
-    return firstValueFrom(this.client.send({ cmd: 'forgot-password' }, data));
+    return firstValueFrom(
+      this.client.send({ cmd: 'forgot-password' }, command),
+    );
   }
 
-  async resetPassword(data: { token: string; newPassword: string }) {
+  async resetPassword(command: ResetPasswordCommand) {
     this.logger.info('Sending reset-password request to auth-service');
 
-    return firstValueFrom(this.client.send({ cmd: 'reset-password' }, data));
+    return firstValueFrom(this.client.send({ cmd: 'reset-password' }, command));
   }
 
   async users(userId: string) {

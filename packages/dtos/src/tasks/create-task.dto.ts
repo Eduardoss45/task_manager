@@ -7,6 +7,7 @@ import {
   ValidateNested,
   IsDateString,
 } from "class-validator";
+import { IsFutureDate } from "../utils/is-future-date";
 import { Transform } from "class-transformer";
 import { TaskPriority, TaskStatus } from "@task_manager/enums";
 import { AssignedUserDto } from "../auth/assigned-user.dto";
@@ -29,6 +30,7 @@ export class CreateTaskDto {
   })
   @IsOptional()
   @IsDateString()
+  @IsFutureDate({ message: "A data de entrega deve ser no futuro" })
   dueDate?: string;
 
   @ApiPropertyOptional({

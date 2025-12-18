@@ -1,0 +1,1 @@
+export type HealthStatus = "up" | "down";
