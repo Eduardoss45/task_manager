@@ -1,11 +1,11 @@
 import { UserRepository } from '../repositories/user.repository';
 import { PasswordResetRepository } from '../repositories/password-reset.repository';
-import { ForgotPasswordDto, ResetPasswordDto } from '@task_manager/dtos';
+import { ForgotPasswordDto, ResetPasswordDto } from '../dtos';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../logger';
 
 @Injectable()
 export class PasswordResetService {

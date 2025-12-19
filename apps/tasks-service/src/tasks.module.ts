@@ -11,7 +11,7 @@ import { TaskAuditRepository } from './modules/repositories/task-audit.repositor
 import { TaskAuditService } from './modules/services/task-audit.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from './modules/logger';
 
 @Module({
   imports: [

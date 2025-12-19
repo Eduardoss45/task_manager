@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationsService } from '../notifications.service';
 import { NotificationRepository } from '../../repositories/notifications.repository';
 import { ClientProxy } from '@nestjs/microservices';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../../logger';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;

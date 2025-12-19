@@ -22,16 +22,16 @@ import {
   AssignedUserDto,
   ForgotPasswordDto,
   ResetPasswordDto,
-} from '@task_manager/dtos';
+} from '../dtos';
 import { Response, Request } from 'express';
 import { JwtAuthGuard } from '../guards/jwt.guard';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../logger/logger.service';
 import {
   ForgotPasswordCommand,
   LoginCommand,
   RegisterCommand,
   ResetPasswordCommand,
-} from '@task_manager/types';
+} from '../types';
 
 @ApiTags('Auth')
 @Controller('auth')

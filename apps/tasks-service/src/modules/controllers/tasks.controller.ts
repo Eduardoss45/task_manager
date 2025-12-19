@@ -6,8 +6,8 @@ import {
   CreateTaskDto,
   UpdateTaskDto,
   CreateCommentDto,
-} from '@task_manager/dtos';
-import { LoggerService } from '@task_manager/logger';
+} from '../dtos';
+import { LoggerService } from '../logger';
 
 @Controller()
 export class TasksController {

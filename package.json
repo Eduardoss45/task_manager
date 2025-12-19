@@ -1,14 +1,12 @@
 {
-  "name": "jungle_gaming",
+  "name": "task_manager",
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types",
-    "db:init": "turbo run migration:generate && turbo run migration:run",
-    "db:migrate": "turbo run migration:run"
+    "test": "turbo run test",
+    "migrate:init": "turbo run migration:generate && turbo run migration:run",
+    "migrate:run": "turbo run migration:run"
   },
   "devDependencies": {
     "prettier": "^3.7.4",
@@ -20,11 +18,9 @@
   },
   "packageManager": "npm@11.6.2",
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/*"
   ],
   "dependencies": {
-    "@task_manager/logger": "^1.0.0",
     "winston": "^3.19.0"
   }
 }

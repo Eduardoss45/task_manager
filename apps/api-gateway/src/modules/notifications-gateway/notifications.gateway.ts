@@ -5,7 +5,7 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../logger/logger.service';
 
 @WebSocketGateway({
   namespace: '/notifications',

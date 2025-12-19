@@ -1,11 +1,11 @@
-import { HealthStatus, TasksHealthResponse } from '@task_manager/types';
+import { HealthStatus, TasksHealthResponse } from '../types';
 import {
   CreateTaskDto,
   UpdateTaskDto,
   CreateCommentDto,
   AssignedUserDto,
-} from '@task_manager/dtos';
-import { TaskPriority, TaskStatus, TaskAuditAction } from '@task_manager/enums';
+} from '../dtos';
+import { TaskPriority, TaskStatus, TaskAuditAction } from '../enums';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   Injectable,
@@ -18,7 +18,7 @@ import { Task } from '../entities/task.entity';
 import { validate as isUUID } from 'uuid';
 import { TaskAuditService } from './task-audit.service';
 import { catchError, of, firstValueFrom, timeout } from 'rxjs';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../logger';
 
 @Injectable()
 export class TasksService {

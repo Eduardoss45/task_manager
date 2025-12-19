@@ -5,7 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Transport } from '@nestjs/microservices';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from './modules/logger';
 
 import {
   LoginDto,
@@ -16,7 +16,7 @@ import {
   AssignedUserDto,
   ForgotPasswordDto,
   ResetPasswordDto,
-} from '@task_manager/dtos';
+} from './modules/dtos';
 
 async function bootstrap() {
   const app = await NestFactory.create(ApiModule, {

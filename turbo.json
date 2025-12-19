@@ -27,6 +27,11 @@
       "cache": false,
       "persistent": true,
       "outputs": []
+    },
+    "test": {
+      "cache": false,
+      "persistent": false,
+      "outputs": []
     }
   }
 }

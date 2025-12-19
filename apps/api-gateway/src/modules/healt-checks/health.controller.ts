@@ -1,6 +1,6 @@
 import { HealthService } from './health.service';
 import { Controller, Get } from '@nestjs/common';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../logger/logger.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Saúde do Sistema')

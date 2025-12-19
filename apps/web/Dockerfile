@@ -1,14 +1,22 @@
-FROM node:20-alpine AS dev
-
+# Builder
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-COPY package*.json ./
-COPY ../../package*.json ../../
-
-RUN npm install
 
 COPY . .
 
-EXPOSE 3000
+RUN npm install
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+RUN npm run build
+
+# Runtime
+FROM node:20-alpine
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install --omit=dev
+
+COPY --from=builder /app/apps/web/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+
+EXPOSE 5173
+CMD ["npx", "vite", "preview", "--port", "5173", "--host"]

@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TasksService } from '../tasks.service';
 import { TasksRepository } from '../../repositories/tasks.repository';
 import { TaskAuditService } from '../task-audit.service';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../../logger';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { of } from 'rxjs';
 

@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { NotificationRepository } from '../repositories/notifications.repository';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../logger';
 
 @Injectable()
 export class NotificationsService {

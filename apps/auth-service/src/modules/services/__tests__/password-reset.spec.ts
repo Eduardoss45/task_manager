@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PasswordResetService } from '../password-reset.service';
 import { UserRepository } from '../../repositories/user.repository';
 import { PasswordResetRepository } from '../../repositories/password-reset.repository';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../../logger';
 import { RpcException } from '@nestjs/microservices';
 import * as bcrypt from 'bcrypt';
 

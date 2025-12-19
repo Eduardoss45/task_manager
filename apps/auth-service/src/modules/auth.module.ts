@@ -10,7 +10,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
-import { LoggerModule } from '@task_manager/logger';
+import { LoggerModule } from './logger';
 
 @Module({
   imports: [

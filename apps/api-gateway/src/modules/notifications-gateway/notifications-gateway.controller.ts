@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { NotificationsGateway } from './notifications.gateway';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../logger/logger.service';
 
 @Controller()
 export class NotificationsGatewayController {

@@ -1,13 +1,13 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../logger/logger.service';
 import {
   ForgotPasswordCommand,
   LoginCommand,
   RegisterCommand,
   ResetPasswordCommand,
-} from '@task_manager/types';
+} from '../types';
 
 @Injectable()
 export class AuthGatewayService {

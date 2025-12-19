@@ -7,7 +7,7 @@ import { NotificationsController } from './modules/controllers/notifications.con
 import { NotificationsService } from './modules/services/notifications.service';
 import { Notification } from './modules/entities/notifications.entity';
 import { NotificationRepository } from './modules/repositories/notifications.repository';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from './modules/logger';
 
 @Module({
   imports: [

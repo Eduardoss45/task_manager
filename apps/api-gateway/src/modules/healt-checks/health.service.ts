@@ -2,7 +2,7 @@ import { NotificationsGateway } from '../notifications-gateway/notifications.gat
 import { ClientProxy } from '@nestjs/microservices';
 import { Injectable, Inject } from '@nestjs/common';
 import { firstValueFrom, timeout } from 'rxjs';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../logger/logger.service';
 
 @Injectable()
 export class HealthService {

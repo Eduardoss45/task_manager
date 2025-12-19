@@ -9,7 +9,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { Observable, catchError, throwError } from 'rxjs';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../logger/logger.service';
 
 @Injectable()
 export class RmqExceptionInterceptor implements NestInterceptor {

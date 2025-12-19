@@ -9,8 +9,8 @@ import {
   RegisterDto,
   ForgotPasswordDto,
   ResetPasswordDto,
-} from '@task_manager/dtos';
-import { LoggerService } from '@task_manager/logger';
+} from '../dtos';
+import { LoggerService } from '../logger';
 
 @Injectable()
 export class AuthService {

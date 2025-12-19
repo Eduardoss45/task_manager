@@ -5,7 +5,7 @@ import { PasswordResetService } from '../password-reset.service';
 import { JwtService } from '@nestjs/jwt';
 import { RpcException } from '@nestjs/microservices';
 import * as bcrypt from 'bcrypt';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../../logger';
 
 jest.mock('bcrypt', () => ({
   hash: jest.fn(),

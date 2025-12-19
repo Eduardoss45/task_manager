@@ -22,12 +22,12 @@ import {
   CreateCommentDto,
   UpdateTaskDto,
   CreateTaskDto,
-} from '@task_manager/dtos';
+} from '../dtos';
 import {
   CreateCommentCommand,
   CreateTaskCommand,
   UpdateTaskCommand,
-} from '@task_manager/types';
+} from '../types';
 import { TasksGatewayService } from './tasks-gateway.service';
 import { JwtAuthGuard } from '../guards/jwt.guard';
 

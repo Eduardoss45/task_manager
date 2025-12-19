@@ -2,7 +2,7 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { AuthService } from '../services/auth.service';
 import { PasswordResetService } from '../services/password-reset.service';
-import { LoggerService } from '@task_manager/logger';
+import { LoggerService } from '../logger';
 
 @Controller()
 export class AuthController {
