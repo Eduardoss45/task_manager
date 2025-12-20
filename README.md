@@ -86,9 +86,9 @@ API Gateway (NestJS)
 * Envio via **WebSocket**
 * Frontend recebe notificações em tempo real
 
-> O notifications-service **não resolve identidade de usuários**.
+> O **notifications-service** não resolve identidade de usuários.
 > Ele utiliza exclusivamente os UUIDs presentes nos payloads dos eventos publicados pelos serviços produtores.
-> O notifications-service mantém sua própria base de dados, utilizada exclusivamente para persistência e entrega de notificações, sem acoplamento com o domínio de tasks.
+> O serviço mantém sua **própria base de dados**, sem acoplamento com o domínio de tasks.
 
 ---
 
@@ -111,15 +111,16 @@ API Gateway (NestJS)
 ### Páginas Implementadas
 
 * Login
-* Register
-* Lista de tarefas (filtro + busca)
-* Detalhe da tarefa (comentários + status)
+* Registro
+* Troca de senha
+* Lista de tarefas (filtro + busca + criação de tarefas)
+* Detalhe da tarefa (comentários + status + histórico + editor)
 
 ---
 
 ## 📚 Documentação da API (Swagger)
 
-O projeto disponibiliza **documentação interativa da API** utilizando **Swagger (OpenAPI)**, centralizada no **API Gateway**, que é o ponto único de entrada do sistema.
+A aplicação disponibiliza **documentação interativa da API** utilizando **Swagger (OpenAPI)**, centralizada no **API Gateway**, que é o ponto único de entrada do sistema.
 
 ### Endpoints disponíveis
 
@@ -144,45 +145,52 @@ O projeto disponibiliza **documentação interativa da API** utilizando **Swagge
 * Token informado via **Authorize**
 * Rotas protegidas acessíveis para testes manuais
 
-### Benefícios
+---
 
-* Testes manuais sem frontend
-* Contrato de integração da API
-* Centralização da documentação
-* Exportável para:
+## 🧪 Logs (Winston)
 
-  * Postman
-  * Insomnia
-  * Testes E2E
-  * Integrações futuras
+A aplicação utiliza **Winston** como logger padronizado, integrado ao **Logger do NestJS**, com o objetivo de substituir o uso de `console.log` e garantir logs estruturados e consistentes entre os serviços.
 
-### Decisão Arquitetural
+* Logger centralizado por serviço
+* Logs formatados via configuração compartilhada (`winston.config`)
+* Níveis suportados:
+  * `info`
+  * `warn`
+  * `error`
+  * `debug`
+  * `verbose`
 
-A documentação foi mantida **exclusivamente no API Gateway** para:
+### Uso
 
-* Evitar duplicação de contratos
-* Manter separação entre **API pública** e **serviços internos**
-* Garantir estabilidade para consumidores externos
+* Logs de inicialização
+* Eventos relevantes de execução
+* Erros e exceções capturados pelo NestJS
+* Logs consistentes em ambiente local e Docker
+
+> O sistema de logs é tratado como um **diferencial técnico**, mantendo-se simples e sem acoplamento com ferramentas externas de observabilidade.
+> A utilização do Winston permite **evoluir futuramente** para soluções de **observabilidade mais completas**, caso necessário, sem impactar a arquitetura atual.
 
 ---
 
-## 🧪 Observabilidade & Qualidade
+## 🧪 Testes
 
-* Logging estruturado
-* Testes unitários com **Jest**:
+* Testes unitários com **Jest**
+* Cobertura aplicada em:
 
   * auth-service
   * tasks-service
   * notifications-service
 
-### Health Checks
+---
+
+## 🩺 Health Checks
 
 | Endpoint               | Descrição                                    |
 | ---------------------- | -------------------------------------------- |
 | `/api/health/live`     | Verifica se o API Gateway está ativo         |
 | `/api/health/services` | Verifica conectividade com serviços internos |
 
-#### Testes manuais
+### Testes manuais
 
 ```bash
 curl http://localhost:3000/api/health/live
@@ -213,7 +221,7 @@ docker compose up --build
 
 * O frontend **não depende** de health checks para iniciar
 * Utilizado `condition: service_started`
-* Health checks usados para **observabilidade e diagnóstico**, não como dependência rígida
+* Health checks usados apenas para **observabilidade e diagnóstico**
 
 ---
 
@@ -221,7 +229,7 @@ docker compose up --build
 
 * TypeORM com **migrations explícitas**
 * `synchronize: false` em todos os serviços
-* Bancos separados:
+* Bancos separados por domínio
 
 ```sql
 CREATE DATABASE auth_db;
@@ -247,14 +255,6 @@ npm run build
 npm run dev
 ```
 
-### O que cada comando faz
-
-* `npm install` – instala dependências
-* `npm run migrate:init` – executa migrations iniciais
-* `npm run test` – executa testes unitários
-* `npm run build` – build completo via Turborepo
-* `npm run dev` – inicia todos os serviços em modo dev
-
 ### Pré-requisitos
 
 * Node.js **>= 18**
@@ -271,17 +271,18 @@ npm run dev
 * RabbitMQ para desacoplamento
 * WebSocket fora do fluxo HTTP
 * Relacionamentos entre serviços via **UUID**
+* Logs estruturados desde o início
 * Eventos emitidos de forma ampla e filtrados no consumer
 
 ---
 
 ## ⚠️ Trade-offs & Observações
 
-* Rate limit (`ttl: 1000, limit: 10`) difícil de testar manualmente
+* Rate limit difícil de testar manualmente
 * UI focada em funcionalidade
-* Alguns pontos tratados como diferenciais por limitação de tempo
+* Observabilidade avançada deixada como evolução natural
 
-> A arquitetura está preparada para evolução sem refatorações estruturais.
+> A arquitetura está preparada para escalar e evoluir sem refatorações estruturais.
 
 ---
 
@@ -293,7 +294,7 @@ npm run dev
 * Retry + DLQ no RabbitMQ
 * Notificações de tarefas vencidas
 * Testes E2E
-* Observabilidade avançada
+* Centralização de logs (ELK / Loki)
 
 ---
 
