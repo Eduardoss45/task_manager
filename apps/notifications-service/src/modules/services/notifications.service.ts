@@ -26,11 +26,20 @@ export class NotificationsService {
       });
       this.logger.info(`Notification dispatched`, { userId, type });
     } catch (err) {
-      this.logger.error(
-        `Failed to persist or dispatch notification`,
-        err,
-        `persistAndDispatch`,
-      );
+      if (err instanceof Error) {
+        this.logger.error(
+          'Failed to persist or dispatch notification',
+          err.stack,
+          'persistAndDispatch',
+        );
+      } else {
+        this.logger.error(
+          'Failed to persist or dispatch notification',
+          String(err),
+          'persistAndDispatch',
+        );
+      }
+
       throw err;
     }
   }
@@ -144,11 +153,19 @@ export class NotificationsService {
       });
       return dbNotificationsStatus ? 'up' : 'down';
     } catch (err) {
-      this.logger.error(
-        'Notifications DB health check failed',
-        err,
-        'healthCheckNotificationsDatabase',
-      );
+      if (err instanceof Error) {
+        this.logger.error(
+          'Notifications DB health check failed',
+          err.stack,
+          'healthCheckNotificationsDatabase',
+        );
+      } else {
+        this.logger.error(
+          'Notifications DB health check failed',
+          String(err),
+          'healthCheckNotificationsDatabase',
+        );
+      }
       return 'down';
     }
   }

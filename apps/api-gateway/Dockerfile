@@ -1,34 +1,30 @@
-# =========================
-# Builder
-# =========================
-FROM node:20-alpine AS builder
+# builder
+FROM node:20.11.1 AS builder
 WORKDIR /app
 
-# Copiar arquivos de configuração e código
-COPY package.json package-lock.json ./
-COPY apps ./apps
-COPY packages ./packages
-
-# Instalar dependências
+# copiar arquivos do root do monorepo
+COPY package*.json ./
+COPY package-lock.json ./
+COPY turbo.json ./
 RUN npm install
+RUN npm install -g @nestjs/cli
 
-# Build do NestJS
-RUN npm run build --if-present --workspaces
+# copiar código da app
+COPY apps/api-gateway ./apps/api-gateway
+WORKDIR /app/apps/api-gateway
 
-# =========================
-# Runtime
-# =========================
-FROM node:20-alpine
+# build
+RUN npm run build
+
+# runtime
+FROM node:20.11.1-alpine AS runtime
 WORKDIR /app
+ENV NODE_ENV=production
 
-# Copiar node_modules e build
+# copiar node_modules e dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/api-gateway/dist ./dist
-
-# Copiar .env do app
-COPY apps/api-gateway/.env ./
+COPY --from=builder /app/apps/api-gateway/.env ./
 
 EXPOSE 3000
-
-# Comando para rodar o NestJS
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/main"]

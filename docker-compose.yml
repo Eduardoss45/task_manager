@@ -1,124 +1,207 @@
+version: "3.8"
+
 services:
-  api-gateway:
-    build:
-      context: .
-      dockerfile: ./apps/api-gateway/Dockerfile
-    container_name: api_gateway
-    ports:
-      - "3000:3000"
-    environment:
-      PORT: 3000
-      JWT_SECRET: FIVN129SX0D8KJSHF8WJH29DJF8WJH29DJSF8WJH2
-      RMQ_URL: amqp://guest:guest@rabbitmq:5672
-      FRONTEND_URL: http://web:5173
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - task_manager_net
-
-  auth-service:
-    build:
-      context: .
-      dockerfile: ./apps/auth-service/Dockerfile
-    container_name: auth_service
-    environment:
-      JWT_SECRET: FIVN129SX0D8KJSHF8WJH29DJF8WJH29DJSF8WJH2
-      RMQ_URL: amqp://guest:guest@rabbitmq:5672
-      DATABASE_URL: postgresql://postgres:2009@postgres:5432/auth_db
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - task_manager_net
-
-  tasks-service:
-    build:
-      context: .
-      dockerfile: ./apps/tasks-service/Dockerfile
-    container_name: tasks_service
-    environment:
-      RMQ_URL: amqp://guest:guest@rabbitmq:5672
-      DATABASE_URL: postgresql://postgres:2009@postgres:5432/tasks_db
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - task_manager_net
-
-  notifications-service:
-    build:
-      context: .
-      dockerfile: ./apps/notifications-service/Dockerfile
-    container_name: notifications_service
-    environment:
-      RMQ_URL: amqp://guest:guest@rabbitmq:5672
-      DATABASE_URL: postgresql://postgres:2009@postgres:5432/notifications_db
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - task_manager_net
-
-  web:
-    build:
-      context: .
-      dockerfile: ./apps/web/Dockerfile
-    container_name: web_app
-    ports:
-      - "5173:5173"
-    environment:
-      VITE_API_URL: http://api-gateway:3000
-    depends_on:
-      api-gateway:
-        condition: service_started
-    networks:
-      - task_manager_net
-
+  # =========================
+  # DATABASE
+  # =========================
   postgres:
-    image: postgres:16-alpine
-    container_name: task_manager_postgres
+    image: postgres:15
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 2009
-      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: "2009"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres-init/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5000:5432"
+    networks:
+      - appnet
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - task_manager_net
+      start_period: 10s
 
+  # =========================
+  # RABBITMQ
+  # =========================
   rabbitmq:
-    image: rabbitmq:3.12-management
-    container_name: task_manager_rabbitmq
-    platform: linux/amd64
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+    image: rabbitmq:3.10.5-management
+    container_name: rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - appnet
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/mnesia
+      - rabbitmq_log:/var/log/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
       interval: 5s
       timeout: 5s
-      retries: 5
-    networks:
-      - task_manager_net
+      retries: 10
+      start_period: 15s
 
-networks:
-  task_manager_net:
-    driver: bridge
+  # =========================
+  # AUTH – MIGRATIONS
+  # =========================
+  auth-migrations:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:2009@postgres:5432/auth_db
+    command: ["node", "node_modules/typeorm/cli.js", "-d", "dist/data-source.js", "migration:run"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - appnet
+
+  # =========================
+  # TASKS – MIGRATIONS
+  # =========================
+  tasks-migrations:
+    build:
+      context: .
+      dockerfile: apps/tasks-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:2009@postgres:5432/tasks_db
+    command: ["node", "node_modules/typeorm/cli.js", "-d", "dist/data-source.js", "migration:run"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - appnet
+
+  # =========================
+  # NOTIFICATIONS – MIGRATIONS
+  # =========================
+  notifications-migrations:
+    build:
+      context: .
+      dockerfile: apps/notifications-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:2009@postgres:5432/notifications_db
+    command: ["node", "node_modules/typeorm/cli.js", "-d", "dist/data-source.js", "migration:run"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - appnet
+
+  # =========================
+  # AUTH SERVICE
+  # =========================
+  auth-service:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-FIVN129SX0D8KJSHF8WJH29DJF8WJH29DJSF8WJH2}
+      RMQ_URL: amqp://guest:guest@rabbitmq:5672
+      DATABASE_URL: postgresql://postgres:2009@postgres:5432/auth_db
+    depends_on:
+      auth-migrations:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - appnet
+
+  # =========================
+  # TASKS SERVICE
+  # =========================
+  tasks-service:
+    build:
+      context: .
+      dockerfile: apps/tasks-service/Dockerfile
+    environment:
+      RMQ_URL: amqp://guest:guest@rabbitmq:5672
+      DATABASE_URL: postgresql://postgres:2009@postgres:5432/tasks_db
+    depends_on:
+      tasks-migrations:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - appnet
+
+  # =========================
+  # NOTIFICATIONS SERVICE
+  # =========================
+  notifications-service:
+    build:
+      context: .
+      dockerfile: apps/notifications-service/Dockerfile
+    environment:
+      RMQ_URL: amqp://guest:guest@rabbitmq:5672
+      DATABASE_URL: postgresql://postgres:2009@postgres:5432/notifications_db
+    depends_on:
+      notifications-migrations:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - appnet
+
+  # =========================
+  # API GATEWAY
+  # =========================
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+    environment:
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-FIVN129SX0D8KJSHF8WJH29DJF8WJH29DJSF8WJH2}
+      RMQ_URL: amqp://guest:guest@rabbitmq:5672
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "3000:3000"
+    depends_on:
+      auth-service:
+        condition: service_started
+      tasks-service:
+        condition: service_started
+      notifications-service:
+        condition: service_started
+    networks:
+      - appnet
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health/services"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # =========================
+  # FRONTEND
+  # =========================
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      VITE_API_URL: http://host.docker.internal:3000
+    ports:
+      - "5173:5173"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - appnet
 
 volumes:
-  postgres_data:
+  pgdata:
+  rabbitmq_data:
+  rabbitmq_log:
+
+networks:
+  appnet:
+    driver: bridge

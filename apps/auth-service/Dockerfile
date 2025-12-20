@@ -1,24 +1,26 @@
-# ========================
-# Builder
-# ========================
-FROM node:20-alpine AS builder
+# builder
+FROM node:20.11.1 AS builder
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-
-COPY packages ./packages
-COPY apps ./apps
-
+COPY package*.json ./
+COPY package-lock.json ./
+COPY turbo.json ./
 RUN npm install
-RUN npm run build --if-present --workspaces
+RUN npm install -g @nestjs/cli
 
-# ========================
-# Runtime
-# ========================
-FROM node:20-alpine
+COPY apps/auth-service ./apps/auth-service
+WORKDIR /app/apps/auth-service
+
+RUN npm run build
+
+# runtime
+FROM node:20.11.1-alpine AS runtime
 WORKDIR /app
+ENV NODE_ENV=production
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/auth-service/dist ./dist
+COPY --from=builder /app/apps/auth-service/.env ./
 
-CMD ["node", "dist/main.js"]
+# serviço de mensageria (não expõe porta)
+CMD ["node", "dist/src/main.js"]

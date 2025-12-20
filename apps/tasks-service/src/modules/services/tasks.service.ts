@@ -1,11 +1,11 @@
-import { HealthStatus, TasksHealthResponse } from '../types';
+import { HealthStatus, TasksHealthResponse } from '../types/index';
 import {
   CreateTaskDto,
   UpdateTaskDto,
   CreateCommentDto,
   AssignedUserDto,
-} from '../dtos';
-import { TaskPriority, TaskStatus, TaskAuditAction } from '../enums';
+} from '../dtos/index';
+import { TaskPriority, TaskStatus, TaskAuditAction } from '../enums/index';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   Injectable,
@@ -222,16 +222,20 @@ export class TasksService {
     const after = await this.repo.findTaskById(id);
     if (!after) throw new NotFoundException('Task not found after update');
 
-    const changes: Record<string, { before: any; after: any }> = {};
+    const changes: Partial<
+      Record<keyof Task, { before: unknown; after: unknown }>
+    > = {};
 
-    for (const key of Object.keys(updatesEntity)) {
-      if (
-        updatesEntity[key] !== undefined &&
-        before[key] !== updatesEntity[key]
-      ) {
+    const keys = Object.keys(updatesEntity) as (keyof Task)[];
+
+    for (const key of keys) {
+      const beforeValue = before[key];
+      const afterValue = updatesEntity[key];
+
+      if (afterValue !== undefined && beforeValue !== afterValue) {
         changes[key] = {
-          before: before[key],
-          after: updatesEntity[key],
+          before: beforeValue,
+          after: afterValue,
         };
       }
     }

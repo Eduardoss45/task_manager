@@ -9,21 +9,21 @@ import {
 @Entity('notifications')
 export class Notification {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string = '';
 
   @Index()
   @Column()
-  userId: string;
+  userId: string = '';
 
   @Column()
-  type: string;
+  type: string = '';
 
   @Column({ type: 'jsonb' })
-  payload: Record<string, any>;
+  payload!: Record<string, any>;
 
   @Column({ default: false })
-  read: boolean;
+  read: boolean = false;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 }
