@@ -104,6 +104,63 @@ API Gateway (NestJS)
 
 ---
 
+## 📚 Documentação da API (Swagger)
+
+O projeto disponibiliza **documentação interativa da API** utilizando **Swagger (OpenAPI)**, centralizada no **API Gateway**, que é o ponto único de entrada do sistema.
+
+```
+
+### 🌐 Endpoints disponíveis
+
+| Endpoint         | Descrição                          |
+| ---------------- | ---------------------------------- |
+| `/api/docs`      | Interface interativa do Swagger UI |
+| `/api/docs-json` | Documento OpenAPI em formato JSON  |
+
+A documentação inclui:
+
+* Endpoints expostos pelo **API Gateway**
+* Rotas protegidas por **JWT**
+* DTOs de entrada e saída
+* Códigos de resposta (`200`, `201`, `400`, `401`, `404`, etc.)
+* Exemplos de payload
+
+> Os **microserviços internos não expõem Swagger individualmente**, reforçando o papel do **API Gateway como camada de contrato público** da aplicação.
+
+---
+
+### 🔐 Autenticação no Swagger
+
+* A autenticação é baseada em **JWT**
+* Após realizar login, o token pode ser informado no Swagger via **Authorize**
+* As rotas protegidas ficam acessíveis diretamente para testes manuais
+
+---
+
+### ✅ Benefícios dessa abordagem
+
+* Facilita testes manuais sem necessidade de frontend
+* Serve como **contrato de integração** da API
+* Centraliza a documentação em um único ponto
+* Preparado para exportação e uso em:
+
+  * Postman
+  * Insomnia
+  * Testes E2E
+  * Integrações futuras
+
+---
+
+### 🧠 Decisão Arquitetural
+
+A documentação foi mantida **exclusivamente no API Gateway** para:
+
+* Evitar duplicação de contratos
+* Manter a separação clara entre **API pública** e **serviços internos**
+* Garantir que mudanças internas não afetem consumidores externos
+
+---
+
 ## 🧪 Observabilidade & Qualidade
 
 - Health checks:
