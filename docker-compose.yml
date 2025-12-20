@@ -173,12 +173,6 @@ services:
         condition: service_started
     networks:
       - appnet
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health/services"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
 
   # =========================
   # FRONTEND
@@ -193,7 +187,7 @@ services:
       - "5173:5173"
     depends_on:
       api-gateway:
-        condition: service_healthy
+        condition: service_started
     networks:
       - appnet
 
