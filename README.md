@@ -6,7 +6,7 @@ O foco principal foi entregar uma solução **end-to-end funcional**, com **sepa
 
 ---
 
-## 🧱 Arquitetura Geral
+## 🧱 Visão Geral da Arquitetura
 
 ```bash
 Frontend (React + TanStack Router)
@@ -24,59 +24,67 @@ API Gateway (NestJS)
               └── Persistência + WebSocket
 ```
 
-- **Monorepo** gerenciado com **Turborepo**
-- **PostgreSQL** como banco de dados
-- **RabbitMQ** para comunicação entre serviços
-- **Docker + Docker Compose** para orquestração
-- **TypeORM + Migrations** para controle de schema
+### Tecnologias Principais
+
+* **Monorepo** gerenciado com **Turborepo**
+* **PostgreSQL** como banco de dados
+* **RabbitMQ** para comunicação entre serviços
+* **Docker + Docker Compose** para orquestração
+* **TypeORM + Migrations** para controle de schema
 
 ---
 
 ## 🔐 Segurança & Autenticação
 
-- Hash de senha com **bcrypt**
-- Autenticação via **JWT**
-- `accessToken` e `refreshToken`
-- Tokens armazenados em **cookies HTTP-only**
-- Proteção de rotas com **Guards + Passport**
-- **Rate limit** aplicado no API Gateway (`10 req/s`)
-- Payload do JWT minimizado (sem dados sensíveis)
+* Hash de senha com **bcrypt**
+* Autenticação via **JWT**
+* `accessToken` e `refreshToken`
+* Tokens armazenados em **cookies HTTP-only**
+* Proteção de rotas com **Guards + Passport**
+* **Rate limit** aplicado no API Gateway (`10 req/s`)
+* Payload do JWT minimizado (sem dados sensíveis)
 
 > O **auth-service** é responsável exclusivamente por autenticação e emissão de tokens.
 > O **API Gateway** apenas valida tokens já emitidos, mantendo separação clara de responsabilidades.
 
 ---
 
-## 📋 Funcionalidades de Tasks
+## 📋 Domínio de Tasks
 
-- CRUD completo de tarefas
-- Status:
-  - `TODO`
-  - `IN_PROGRESS`
-  - `REVIEW`
-  - `DONE`
+### Funcionalidades
 
-- Prioridade:
-  - `LOW`
-  - `MEDIUM`
-  - `HIGH`
-  - `URGENT`
+* CRUD completo de tarefas
+* Comentários por tarefa
+* Histórico básico de alterações
 
-- Comentários por tarefa
-- Histórico básico de alterações
-- Publicação de eventos:
-  - `task.created`
-  - `task.updated`
-  - `task.comment.created`
+### Status disponíveis
+
+* `TODO`
+* `IN_PROGRESS`
+* `REVIEW`
+* `DONE`
+
+### Prioridades disponíveis
+
+* `LOW`
+* `MEDIUM`
+* `HIGH`
+* `URGENT`
+
+### Eventos publicados
+
+* `task.created`
+* `task.updated`
+* `task.comment.created`
 
 ---
 
 ## 🔔 Notificações em Tempo Real
 
-- Eventos consumidos via **RabbitMQ**
-- Persistência em banco próprio
-- Envio via **WebSocket**
-- Frontend recebe notificações em tempo real
+* Eventos consumidos via **RabbitMQ**
+* Persistência em banco próprio
+* Envio via **WebSocket**
+* Frontend recebe notificações em tempo real
 
 > O notifications-service **não resolve identidade de usuários**.
 > Ele utiliza exclusivamente os UUIDs presentes nos payloads dos eventos publicados pelos serviços produtores.
@@ -86,21 +94,26 @@ API Gateway (NestJS)
 
 ## 🎨 Frontend
 
-- **React (Vite)**
-- **TanStack Router**
-- **Tailwind CSS**
-- **shadcn/ui**
-- **react-hook-form + zod**
-- Skeleton loaders
-- WebSocket conectado após login
-- Feedback visual via toast
+### Stack
+
+* **React (Vite)**
+* **TanStack Router**
+* **Tailwind CSS**
+* **shadcn/ui**
+* **react-hook-form + zod**
+
+### Características
+
+* Skeleton loaders
+* WebSocket conectado após login
+* Feedback visual via toast
 
 ### Páginas Implementadas
 
-- Login
-- Register
-- Lista de tarefas (filtro + busca)
-- Detalhe da tarefa (comentários + status)
+* Login
+* Register
+* Lista de tarefas (filtro + busca)
+* Detalhe da tarefa (comentários + status)
 
 ---
 
@@ -108,16 +121,14 @@ API Gateway (NestJS)
 
 O projeto disponibiliza **documentação interativa da API** utilizando **Swagger (OpenAPI)**, centralizada no **API Gateway**, que é o ponto único de entrada do sistema.
 
-```
-
-### 🌐 Endpoints disponíveis
+### Endpoints disponíveis
 
 | Endpoint         | Descrição                          |
 | ---------------- | ---------------------------------- |
 | `/api/docs`      | Interface interativa do Swagger UI |
 | `/api/docs-json` | Documento OpenAPI em formato JSON  |
 
-A documentação inclui:
+### Conteúdo documentado
 
 * Endpoints expostos pelo **API Gateway**
 * Rotas protegidas por **JWT**
@@ -127,160 +138,106 @@ A documentação inclui:
 
 > Os **microserviços internos não expõem Swagger individualmente**, reforçando o papel do **API Gateway como camada de contrato público** da aplicação.
 
----
+### Autenticação no Swagger
 
-### 🔐 Autenticação no Swagger
+* Autenticação baseada em **JWT**
+* Token informado via **Authorize**
+* Rotas protegidas acessíveis para testes manuais
 
-* A autenticação é baseada em **JWT**
-* Após realizar login, o token pode ser informado no Swagger via **Authorize**
-* As rotas protegidas ficam acessíveis diretamente para testes manuais
+### Benefícios
 
----
-
-### ✅ Benefícios dessa abordagem
-
-* Facilita testes manuais sem necessidade de frontend
-* Serve como **contrato de integração** da API
-* Centraliza a documentação em um único ponto
-* Preparado para exportação e uso em:
+* Testes manuais sem frontend
+* Contrato de integração da API
+* Centralização da documentação
+* Exportável para:
 
   * Postman
   * Insomnia
   * Testes E2E
   * Integrações futuras
 
----
-
-### 🧠 Decisão Arquitetural
+### Decisão Arquitetural
 
 A documentação foi mantida **exclusivamente no API Gateway** para:
 
 * Evitar duplicação de contratos
-* Manter a separação clara entre **API pública** e **serviços internos**
-* Garantir que mudanças internas não afetem consumidores externos
+* Manter separação entre **API pública** e **serviços internos**
+* Garantir estabilidade para consumidores externos
 
 ---
 
 ## 🧪 Observabilidade & Qualidade
 
-- Health checks:
-  - `/api/health/live`
-  - `/api/health/services`
+* Logging estruturado
+* Testes unitários com **Jest**:
 
-- Logging estruturado
-- Testes unitários com **Jest**:
-  - auth-service
-  - tasks-service
-  - notifications-service
+  * auth-service
+  * tasks-service
+  * notifications-service
 
----
-
-## 🧪 Health Checks & Testes Manuais
-
-O sistema expõe endpoints de **health check** no **API Gateway**, permitindo verificar o estado da aplicação e a disponibilidade dos serviços internos de forma independente do frontend.
-
-### Endpoints disponíveis
+### Health Checks
 
 | Endpoint               | Descrição                                    |
 | ---------------------- | -------------------------------------------- |
 | `/api/health/live`     | Verifica se o API Gateway está ativo         |
 | `/api/health/services` | Verifica conectividade com serviços internos |
 
----
-
-### 🔍 Testar manualmente com `curl`
-
-#### ✔️ Verificar se o API Gateway está ativo
+#### Testes manuais
 
 ```bash
 curl http://localhost:3000/api/health/live
-```
-
----
-
-#### ✔️ Verificar status dos serviços internos
-
-```bash
 curl http://localhost:3000/api/health/services
 ```
 
-Esse endpoint valida:
-
-- Conectividade com os microserviços
-- Comunicação via RabbitMQ
-- Disponibilidade geral do ecossistema
-
 ---
 
-### 🐳 Observação sobre Docker & Health Checks
+## 🐳 Infraestrutura & Docker
 
-O **frontend não depende de health checks** para inicialização.
-Ele pode ser iniciado antes do API Gateway, pois o navegador lida naturalmente com reconexões quando a API ainda não está disponível.
+* Dockerfile individual por serviço
+* docker-compose orquestrando:
 
-Por esse motivo:
+  * API Gateway
+  * Auth Service
+  * Tasks Service
+  * Notifications Service
+  * PostgreSQL
+  * RabbitMQ
 
-- O `docker-compose` **não utiliza `service_healthy` para o serviço web**
-- É usado `condition: service_started` para evitar acoplamento desnecessário
-- Os health checks existem para **observabilidade e diagnóstico**, não como dependência rígida de startup
-
----
-
-### ✅ Benefícios dessa abordagem
-
-- Testes rápidos sem frontend
-- Diagnóstico fácil em ambientes Docker
-- Separação clara entre **infra**, **API** e **UI**
-- Health checks reutilizáveis para futuras integrações (K8s, CI, etc.)
-
----
-
-## 🗄️ Banco de Dados & Migrations
-
-- TypeORM com **migrations explícitas**
-- `synchronize: false` em todos os serviços
-- Bancos separados:
-
-  ```sql
-  CREATE DATABASE auth_db;
-  CREATE DATABASE tasks_db;
-  CREATE DATABASE notifications_db;
-  ```
-
-### Execução de Migrations
-
-- As migrations são executadas automaticamente no Docker
-- Apenas `migration:run` é utilizado
-- Nunca é usado `migration:generate` em ambiente Docker
-
----
-
-## 🐳 Docker & Infraestrutura
-
-- Dockerfile individual por serviço
-- docker-compose orquestrando:
-  - API Gateway
-  - Auth Service
-  - Tasks Service
-  - Notifications Service
-  - PostgreSQL
-  - RabbitMQ
-
-### Executar o projeto
+### Execução com Docker
 
 ```bash
 docker compose up --build
 ```
 
-Perfeito 👍
-Esse trecho está **correto**, mas dá para deixá-lo um pouco mais **claro e profissional**, explicando **o que cada comando faz** (isso costuma contar pontos em avaliação).
+### Observação sobre Health Checks
 
-Segue uma versão **revisada e recomendada** para o README:
+* O frontend **não depende** de health checks para iniciar
+* Utilizado `condition: service_started`
+* Health checks usados para **observabilidade e diagnóstico**, não como dependência rígida
+
+---
+
+## 🗄️ Banco de Dados & Migrations
+
+* TypeORM com **migrations explícitas**
+* `synchronize: false` em todos os serviços
+* Bancos separados:
+
+```sql
+CREATE DATABASE auth_db;
+CREATE DATABASE tasks_db;
+CREATE DATABASE notifications_db;
+```
+
+### Execução de Migrations
+
+* Executadas automaticamente no Docker
+* Uso exclusivo de `migration:run`
+* `migration:generate` nunca é usado em ambiente Docker
 
 ---
 
 ## ▶️ Execução Local (sem Docker)
-
-Para executar o projeto localmente **sem Docker**, navegue até a raiz do monorepo e execute:
 
 ```bash
 npm install
@@ -292,68 +249,56 @@ npm run dev
 
 ### O que cada comando faz
 
-- `npm install`
-  Instala todas as dependências do monorepo.
+* `npm install` – instala dependências
+* `npm run migrate:init` – executa migrations iniciais
+* `npm run test` – executa testes unitários
+* `npm run build` – build completo via Turborepo
+* `npm run dev` – inicia todos os serviços em modo dev
 
-- `npm run migrate:init`
-  Executa as migrations iniciais dos serviços (`auth`, `tasks`, `notifications`).
+### Pré-requisitos
 
-- `npm run test`
-  Executa os testes unitários configurados nos serviços.
-
-- `npm run build`
-  Realiza o build completo do monorepo utilizando **Turborepo**.
-
-- `npm run dev`
-  Inicia todos os serviços em modo desenvolvimento.
-
----
-
-### ⚠️ Pré-requisitos
-
-- Node.js **>= 18**
-- PostgreSQL em execução
-- RabbitMQ em execução
-- Variáveis de ambiente configuradas (`.env`)
+* Node.js **>= 18**
+* PostgreSQL em execução
+* RabbitMQ em execução
+* Variáveis de ambiente configuradas (`.env`)
 
 ---
 
 ## 🧠 Decisões Técnicas Importantes
 
-- Monorepo para padronização e reutilização
-- API Gateway como ponto único de entrada
-- RabbitMQ para desacoplamento
-- WebSocket separado do fluxo HTTP
-- Relacionamentos entre serviços feitos apenas por **UUIDs**
-- Eventos emitidos de forma ampla e filtrados no consumer
+* Monorepo para padronização
+* API Gateway como ponto único de entrada
+* RabbitMQ para desacoplamento
+* WebSocket fora do fluxo HTTP
+* Relacionamentos entre serviços via **UUID**
+* Eventos emitidos de forma ampla e filtrados no consumer
 
 ---
 
 ## ⚠️ Trade-offs & Observações
 
-- Rate limit com `ttl: 1000, limit: 10` é correto, porém difícil de testar manualmente
-  → Para testes, pode ser ajustado temporariamente
-- UI focada em funcionalidade, não em refinamento visual
-- Alguns pontos foram tratados como **opcionais/diferenciais** por limitação de tempo
+* Rate limit (`ttl: 1000, limit: 10`) difícil de testar manualmente
+* UI focada em funcionalidade
+* Alguns pontos tratados como diferenciais por limitação de tempo
 
-> A arquitetura já está preparada para suportar melhorias futuras sem refatorações estruturais.
+> A arquitetura está preparada para evolução sem refatorações estruturais.
 
 ---
 
 ## 🚀 Melhorias Futuras
 
-- Integração com **TanStack Query**
-- Validação de variáveis de ambiente com Joi
-- Redis para cache
-- Retry policy + DLQ no RabbitMQ
-- Notificações automáticas para tarefas vencidas
-- Testes E2E
-- Observabilidade avançada
+* TanStack Query
+* Validação de env com Joi
+* Redis para cache
+* Retry + DLQ no RabbitMQ
+* Notificações de tarefas vencidas
+* Testes E2E
+* Observabilidade avançada
 
 ---
 
 ## ⏱️ Tempo de Desenvolvimento
 
-- Backend: **4 dias**
-- Frontend: **3 dias**
-- Infraestrutura & ajustes: **3 dias**
+* Backend: **4 dias**
+* Frontend: **3 dias**
+* Infraestrutura & ajustes: **3 dias**
