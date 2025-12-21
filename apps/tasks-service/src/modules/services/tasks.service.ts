@@ -99,9 +99,18 @@ export class TasksService {
     }
   }
 
-  async getTasks(page: number, size: number) {
-    this.logger.info('Fetching tasks', { page, size });
-    return this.repo.findTasks(page, size);
+  async getTasks(page?: number, size?: number) {
+    const MAX_PAGE_SIZE = 25;
+
+    const resolvedPage = page && page > 0 ? page : 1;
+    const resolvedSize =
+      size && size > 0 && size <= MAX_PAGE_SIZE ? size : MAX_PAGE_SIZE;
+
+    this.logger.info('Fetching tasks', {
+      page: resolvedPage,
+      size: resolvedSize,
+    });
+    return this.repo.findTasks(resolvedPage, resolvedSize);
   }
 
   async createTask(
