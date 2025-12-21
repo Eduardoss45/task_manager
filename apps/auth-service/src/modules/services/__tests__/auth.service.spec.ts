@@ -176,4 +176,27 @@ describe('AuthService', () => {
 
     await expect(service.refresh('invalid')).rejects.toBeDefined();
   });
+
+  it('faz logout e invalida o refresh token', async () => {
+    (jwt.verify as jest.Mock).mockReturnValue({ sub: 'user-id' });
+
+    users.updateRefreshToken.mockResolvedValue({} as any);
+
+    const result = await service.logout('refresh-token');
+
+    expect(jwt.verify).toHaveBeenCalledWith('refresh-token');
+    expect(users.updateRefreshToken).toHaveBeenCalledWith('user-id', null);
+    expect(result).toEqual({ success: true });
+  });
+
+  it('não falha ao fazer logout com refresh token inválido', async () => {
+    (jwt.verify as jest.Mock).mockImplementation(() => {
+      throw new Error('invalid token');
+    });
+
+    const result = await service.logout('invalid-refresh-token');
+
+    expect(result).toEqual({ success: true });
+    expect(users.updateRefreshToken).not.toHaveBeenCalled();
+  });
 });

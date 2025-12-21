@@ -12,7 +12,7 @@ export function Tasks() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [size, setSize] = useState(2);
+  const [size, setSize] = useState(10);
 
   useEffect(() => {
     fetchTasks(page, size);
@@ -30,9 +30,7 @@ export function Tasks() {
 
   return (
     <div className="min-h-screen flex flex-col px-2 sm:px-0">
-      {/* Conteúdo principal */}
       <div className="flex-1 space-y-4">
-        {/* Header + filtros */}
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-col gap-2 sm:flex-row sm:gap-3 w-full md:w-auto">
             <Input
@@ -99,7 +97,6 @@ export function Tasks() {
         )}
       </div>
 
-      {/* Footer / Paginação */}
       <footer className="border-t border-border mt-auto pt-4">
         <div className="flex items-center justify-between">
           <Button

@@ -57,4 +57,12 @@ export class AuthGatewayService {
 
     return firstValueFrom(this.client.send({ cmd: 'users' }, { userId }));
   }
+
+  async logout(refreshToken: string) {
+    this.logger.info('Sending logout request to auth-service');
+
+    return firstValueFrom(
+      this.client.send({ cmd: 'logout' }, { refreshToken }),
+    );
+  }
 }

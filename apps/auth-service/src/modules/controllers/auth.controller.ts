@@ -54,6 +54,12 @@ export class AuthController {
     return this.authService.getUsersFromAccessToken(data.userId);
   }
 
+  @MessagePattern({ cmd: 'logout' })
+  logout(data: { refreshToken: string }) {
+    this.logger.info('Logout request received');
+    return this.authService.logout(data.refreshToken);
+  }
+
   @MessagePattern({ cmd: 'auth-start' })
   async authHealthCheck() {
     this.logger.info('Auth health check requested');

@@ -12,7 +12,11 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     const { clearUser } = authStore.getState();
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("api/auth/refresh")
+    ) {
       originalRequest._retry = true;
 
       try {

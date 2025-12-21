@@ -364,13 +364,27 @@ export class TasksService {
     return createdComment;
   }
 
-  async getComments(taskId: string, page: number, size: number) {
+  async getComments(taskId: string, page?: number, size?: number) {
     this.assertUUID(taskId, 'Task ID');
 
     const task = await this.repo.findTaskById(taskId);
-    if (!task) throw new NotFoundException('Task not found');
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
 
-    return this.repo.findComments(taskId, page, size);
+    const MAX_PAGE_SIZE = 10;
+
+    const resolvedPage = page && page > 0 ? page : 1;
+    const resolvedSize =
+      size && size > 0 && size <= MAX_PAGE_SIZE ? size : MAX_PAGE_SIZE;
+
+    this.logger.info('Fetching comments', {
+      taskId,
+      page: resolvedPage,
+      size: resolvedSize,
+    });
+
+    return this.repo.findComments(taskId, resolvedPage, resolvedSize);
   }
 
   async healthCheckTasksDatabase(): Promise<TasksHealthResponse> {

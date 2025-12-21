@@ -10,6 +10,21 @@ export function useUserConnect() {
   const { user, setUser, clearUser, hydrated, setHydrated } = authStore();
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (!hydrated) return;
+
+    const pathname = router.state.location.pathname;
+
+    if (user && pathname === "/") {
+      navigate({ to: "/tasks", replace: true });
+    }
+
+    if (!user && pathname.startsWith("/tasks")) {
+      toast.warning("Faça login para continuar");
+      navigate({ to: "/", replace: true });
+    }
+  }, [hydrated, user]);
+
   async function bootstrapSession() {
     try {
       const res = await api.post("api/auth/refresh");
@@ -92,10 +107,9 @@ export function useUserConnect() {
     }
   }
 
-
   async function logout() {
     try {
-      await api.post("/auth/logout");
+      await api.post("api/auth/logout");
     } finally {
       clearUser();
       navigate({ to: "/" });

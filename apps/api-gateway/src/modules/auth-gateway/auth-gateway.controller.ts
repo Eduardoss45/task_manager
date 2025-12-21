@@ -244,4 +244,31 @@ export class AuthGatewayController {
       availableUsers: result.availableUsers ?? [],
     });
   }
+
+  @Post('logout')
+  @ApiOperation({
+    summary: 'Encerra a sessão do usuário',
+    description:
+      'Invalida o refresh token armazenado e remove os cookies de autenticação.',
+  })
+  @ApiOkResponse({
+    description: 'Logout realizado com sucesso',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Usuário não autenticado',
+  })
+  async logout(@Req() req: Request, @Res() res: Response) {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (refreshToken) {
+      await this.auth.logout(refreshToken);
+    }
+
+    res.clearCookie('accessToken', { path: '/' });
+    res.clearCookie('refreshToken', { path: '/api/auth/refresh' });
+
+    this.logger.info('User logged out');
+
+    return res.json({ success: true });
+  }
 }

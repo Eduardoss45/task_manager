@@ -203,6 +203,25 @@ export class AuthService {
     return { availableUsers };
   }
 
+  async logout(refreshToken: string) {
+    this.logger.info('Logout attempt');
+
+    try {
+      const payload = this.jwtService.verify<{ sub: string }>(refreshToken);
+
+      await this.users.updateRefreshToken(payload.sub, null);
+
+      this.logger.info('Refresh token invalidated', {
+        userId: payload.sub,
+      });
+
+      return { success: true };
+    } catch {
+      this.logger.info('Logout with invalid or expired token');
+      return { success: true };
+    }
+  }
+
   async healthCheckAuthDatabase(): Promise<'up' | 'down'> {
     this.logger.info('Auth DB health check started');
 

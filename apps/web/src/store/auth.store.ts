@@ -27,7 +27,7 @@ export const authStore = create<AuthState>()(
       setHydrated: () => set({ hydrated: true }),
     }),
     {
-      name: "auth-storage",
+      name: "auth-store",
       partialize: state => ({ user: state.user }),
     }
   )
