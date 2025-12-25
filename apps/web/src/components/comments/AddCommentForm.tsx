@@ -1,18 +1,21 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { commentSchema } from "@/lib/validators/tasks/commentValidators";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { useTaskManager } from "@/hooks/tasks/useTaskManager";
-import { Send } from "lucide-react";
+import { useForm } from 'react-hook-form';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queries/queryKeys';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { commentSchema } from '@/lib/validators/tasks/commentValidators';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { useTaskManager } from '@/hooks/tasks/useTaskManager';
+import { Send } from 'lucide-react';
 
 type AddCommentFormProps = {
   taskId: string;
   onSuccess?: () => void;
 };
 
-export function AddCommentForm({ taskId, onSuccess }: AddCommentFormProps) {
+export function AddCommentForm({ taskId }: AddCommentFormProps) {
   const { addComment } = useTaskManager();
+  const queryClient = useQueryClient();
 
   const form = useForm({
     resolver: zodResolver(commentSchema),
@@ -20,14 +23,22 @@ export function AddCommentForm({ taskId, onSuccess }: AddCommentFormProps) {
 
   async function onSubmit(data: any) {
     await addComment(taskId, data.content);
+
     form.reset();
-    onSuccess?.();
+
+    queryClient.invalidateQueries({
+      queryKey: ['comments', taskId],
+    });
+
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.task(taskId),
+    });
   }
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
       <Textarea
-        {...form.register("content")}
+        {...form.register('content')}
         placeholder="Escreva um comentário..."
         className="resize-none"
       />

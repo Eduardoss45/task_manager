@@ -1,25 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useTaskManager } from "@/hooks/tasks/useTaskManager";
-import { TaskSkeleton } from "../skeletons/TaskSkeleton";
-import { TaskCard } from "./TaskCard";
-import { Link } from "@tanstack/react-router";
+import { useMemo, useState } from 'react';
+import { Link } from '@tanstack/react-router';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { TaskSkeleton } from '../skeletons/TaskSkeleton';
+import { TaskCard } from './TaskCard';
+import { useTasks } from '@/hooks/queries/useTasks';
+import type { Task } from '@/types/task';
 
 export function Tasks() {
-  const { tasks, loading, fetchTasks } = useTaskManager();
-
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(10);
 
-  useEffect(() => {
-    fetchTasks(page, size);
-  }, [fetchTasks, page, size]);
+  const { data: tasks = [], isPending, isFetching } = useTasks(page, size);
+
+  const loading = isPending || isFetching;
 
   const filtered = useMemo(() => {
-    return tasks.filter(task => {
+    return tasks.filter((task: Task) => {
       const matchesSearch = task.title.toLowerCase().includes(search.toLowerCase());
 
       const matchesStatus = status ? task.status === status : true;
@@ -44,7 +43,7 @@ export function Tasks() {
             />
 
             <select
-              value={status ?? ""}
+              value={status ?? ''}
               onChange={e => {
                 setStatus(e.target.value || null);
                 setPage(1);
@@ -80,7 +79,7 @@ export function Tasks() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
           {!loading &&
-            filtered.map(task => (
+            filtered.map((task: Task) => (
               <Link
                 key={task.id}
                 to="/tasks/$taskId"

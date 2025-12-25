@@ -1,32 +1,21 @@
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { ShimmerSkeleton } from "@/components/skeletons/ShimmerSkeleton";
-import { useTaskManager } from "@/hooks/tasks/useTaskManager";
-import { formatDate } from "@/lib/formatters/date";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { ShimmerSkeleton } from '@/components/skeletons/ShimmerSkeleton';
+import { formatDate } from '@/lib/formatters/date';
+import { useComments } from '@/hooks/queries/useComments';
 
 export function CommentsList({ taskId }: { taskId: string }) {
-  const { getComments } = useTaskManager();
-
-  const [comments, setComments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [size] = useState(5);
+  const size = 5;
 
-  async function load() {
-    setLoading(true);
-    const data = await getComments(taskId, page, size);
-    setComments(data.items ?? data);
-    setLoading(false);
-  }
+  const { data, isPending } = useComments(taskId, page, size);
 
-  useEffect(() => {
-    load();
-  }, [taskId, page]);
-
-  if (loading) {
+  if (isPending) {
     return <ShimmerSkeleton className="h-24 w-full" />;
   }
+
+  const comments = data ?? [];
 
   return (
     <div className="min-h-[120px] flex flex-col">
@@ -50,8 +39,7 @@ export function CommentsList({ taskId }: { taskId: string }) {
         <Button
           variant="secondary"
           size="sm"
-          className="bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
-          disabled={page === 1 || loading}
+          disabled={page === 1}
           onClick={() => setPage(p => Math.max(1, p - 1))}
         >
           Anterior
@@ -62,7 +50,6 @@ export function CommentsList({ taskId }: { taskId: string }) {
         <Button
           variant="secondary"
           size="sm"
-          className="bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
           disabled={comments.length < size}
           onClick={() => setPage(p => p + 1)}
         >

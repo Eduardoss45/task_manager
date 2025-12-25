@@ -1,22 +1,22 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { editTaskSchema } from "@/lib/validators/tasks/taskValidators";
-import type { TaskPriority, TaskStatus } from "@/lib/validators/tasks/taskValidators";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Controller } from "react-hook-form";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { editTaskSchema } from '@/lib/validators/tasks/taskValidators';
+import type { TaskPriority, TaskStatus } from '@/lib/validators/tasks/taskValidators';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Controller } from 'react-hook-form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useTaskManager } from "@/hooks/tasks/useTaskManager";
-import { useState } from "react";
+} from '@/components/ui/select';
+import { useUpdateTask } from '@/hooks/queries/useUpdateTask';
+import { useState } from 'react';
 
 type AssignedUser = {
   userId: string;
@@ -39,7 +39,7 @@ type EditTaskFormProps = {
 };
 
 export function EditTaskForm({ task, availableUsers, onSuccess }: EditTaskFormProps) {
-  const { updateTask } = useTaskManager();
+  const updateTaskMutation = useUpdateTask(task.id);
 
   const filteredUsers = availableUsers?.filter(user => user.userId !== task.authorId);
 
@@ -67,24 +67,28 @@ export function EditTaskForm({ task, availableUsers, onSuccess }: EditTaskFormPr
     );
   }
 
-  async function onSubmit(data: any) {
-    const updatedTask = await updateTask(task.id, {
-      ...data,
-      assignedUserIds: assigned.map(u => ({
-        userId: u.userId,
-        username: u.username,
-      })),
-    });
-
-    if (updatedTask) {
-      onSuccess(updatedTask);
-    }
+  function onSubmit(data: any) {
+    updateTaskMutation.mutate(
+      {
+        ...data,
+        assignedUserIds: assigned.map(u => ({
+          userId: u.userId,
+          username: u.username,
+        })),
+      },
+      {
+        onSuccess: updatedTask => {
+          onSuccess(updatedTask);
+        },
+      }
+    );
   }
+
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      <Input {...form.register("title")} placeholder="Título" />
-      <Textarea {...form.register("description")} placeholder="Descrição" />
+      <Input {...form.register('title')} placeholder="Título" />
+      <Textarea {...form.register('description')} placeholder="Descrição" />
       <Controller
         name="dueDate"
         control={form.control}
@@ -104,7 +108,7 @@ export function EditTaskForm({ task, availableUsers, onSuccess }: EditTaskFormPr
             cursor-pointer
           "
               >
-                {field.value ? new Date(field.value).toLocaleDateString() : "Selecione uma data"}
+                {field.value ? new Date(field.value).toLocaleDateString() : 'Selecione uma data'}
               </Button>
             </PopoverTrigger>
 
@@ -123,13 +127,13 @@ export function EditTaskForm({ task, availableUsers, onSuccess }: EditTaskFormPr
       <div className="grid grid-cols-2 gap-3">
         <Select
           defaultValue={task.priority}
-          onValueChange={(v: TaskPriority) => form.setValue("priority", v)}
+          onValueChange={(v: TaskPriority) => form.setValue('priority', v)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Prioridade" />
           </SelectTrigger>
           <SelectContent>
-            {["LOW", "MEDIUM", "HIGH", "URGENT"].map(p => (
+            {['LOW', 'MEDIUM', 'HIGH', 'URGENT'].map(p => (
               <SelectItem key={p} value={p}>
                 {p}
               </SelectItem>
@@ -139,13 +143,13 @@ export function EditTaskForm({ task, availableUsers, onSuccess }: EditTaskFormPr
 
         <Select
           defaultValue={task.status}
-          onValueChange={(v: TaskStatus) => form.setValue("status", v)}
+          onValueChange={(v: TaskStatus) => form.setValue('status', v)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            {["TODO", "IN_PROGRESS", "REVIEW", "DONE"].map(s => (
+            {['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'].map(s => (
               <SelectItem key={s} value={s}>
                 {s}
               </SelectItem>
@@ -164,8 +168,8 @@ export function EditTaskForm({ task, availableUsers, onSuccess }: EditTaskFormPr
               onClick={() => toggleUser(u)}
               className={`px-3 py-1 rounded-full text-xs border transition ${
                 assigned.find((a: any) => a.userId === u.userId)
-                  ? "bg-blue-600 border-blue-500 text-white"
-                  : "border-zinc-700 text-zinc-300"
+                  ? 'bg-blue-600 border-blue-500 text-white'
+                  : 'border-zinc-700 text-zinc-300'
               }`}
             >
               {u.username}

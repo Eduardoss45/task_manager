@@ -1,69 +1,48 @@
-import { useEffect, useState, useCallback } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Calendar, User, MessageSquare, History } from "lucide-react";
-import { useTaskManager } from "@/hooks/tasks/useTaskManager";
-import type { TaskDetails } from "@/types/task-details";
-import { formatDate } from "@/lib/formatters/date";
-import { EditTaskForm } from "@/components/tasks/EditTaskForm";
-import { AddCommentForm } from "@/components/comments/AddCommentForm";
-import { CommentsList } from "@/components/comments/CommentsList";
+import { useState } from 'react';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ArrowLeft, Calendar, User, MessageSquare, History } from 'lucide-react';
+
+import { useTask } from '@/hooks/queries/useTask';
+import { useUsers } from '@/hooks/queries/useUsers';
+import { useDeleteTask } from '@/hooks/mutations/useDeleteTask';
+import { formatDate } from '@/lib/formatters/date';
+import { EditTaskForm } from '@/components/tasks/EditTaskForm';
+import { AddCommentForm } from '@/components/comments/AddCommentForm';
+import { CommentsList } from '@/components/comments/CommentsList';
 
 type TaskDetailsPageProps = {
   taskId: string;
 };
 
 const statusColor: Record<string, string> = {
-  TODO: "bg-gray-500",
-  IN_PROGRESS: "bg-blue-500",
-  REVIEW: "bg-yellow-500",
-  DONE: "bg-green-500",
+  TODO: 'bg-gray-500',
+  IN_PROGRESS: 'bg-blue-500',
+  REVIEW: 'bg-yellow-500',
+  DONE: 'bg-green-500',
 };
 
 const priorityColor: Record<string, string> = {
-  LOW: "bg-green-600",
-  MEDIUM: "bg-yellow-600",
-  HIGH: "bg-red-600",
-  URGENT: "bg-red-700",
+  LOW: 'bg-green-600',
+  MEDIUM: 'bg-yellow-600',
+  HIGH: 'bg-red-600',
+  URGENT: 'bg-red-700',
 };
 
 export default function TaskDetailsPage({ taskId }: TaskDetailsPageProps) {
-  const { getTask, deleteTask, getUsers } = useTaskManager();
   const navigate = useNavigate();
-
-  const [task, setTask] = useState<TaskDetails | null>(null);
-  const [availableUsers, setAvailableUsers] = useState<{ userId: string; username: string }[]>([]);
-  const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [commentsVersion, setCommentsVersion] = useState(0);
 
-  const loadTask = useCallback(async () => {
-    setLoading(true);
-    const data = await getTask(taskId);
-    setTask(data);
-    setLoading(false);
-  }, [taskId, getTask]);
+  const { data: task, isPending } = useTask(taskId);
+  const { data: availableUsers = [] } = useUsers();
+  const deleteTask = useDeleteTask();
 
-  const loadUsers = useCallback(async () => {
-    const users = await getUsers();
-    setAvailableUsers(users);
-  }, [getUsers]);
-
-  useEffect(() => {
-    loadTask();
-    loadUsers();
-  }, [loadTask, loadUsers]);
-
-  const refetchComments = () => {
-    setCommentsVersion(v => v + 1);
-  };
-
-  if (loading) {
+  if (isPending) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-8 w-1/2" />
@@ -138,13 +117,13 @@ export default function TaskDetailsPage({ taskId }: TaskDetailsPageProps) {
           <Button variant="secondary" onClick={() => setEditing(true)}>
             Editar
           </Button>
+
           <Button
             variant="destructive"
+            disabled={deleteTask.isPending}
             onClick={async () => {
-              const ok = await deleteTask(task.id);
-              if (ok) {
-                navigate({ to: "/tasks" });
-              }
+              await deleteTask.mutateAsync(task.id);
+              navigate({ to: '/tasks' });
             }}
           >
             Deletar
@@ -155,10 +134,7 @@ export default function TaskDetailsPage({ taskId }: TaskDetailsPageProps) {
           <EditTaskForm
             task={task}
             availableUsers={availableUsers}
-            onSuccess={updatedTask => {
-              setTask(updatedTask);
-              setEditing(false);
-            }}
+            onSuccess={() => setEditing(false)}
           />
         )}
 
@@ -171,9 +147,8 @@ export default function TaskDetailsPage({ taskId }: TaskDetailsPageProps) {
           </CardHeader>
 
           <CardContent className="space-y-4">
-            <AddCommentForm taskId={task.id} onSuccess={refetchComments} />
-
-            <CommentsList key={commentsVersion} taskId={task.id} />
+            <AddCommentForm taskId={task.id} />
+            <CommentsList taskId={task.id} />
           </CardContent>
         </Card>
 
@@ -199,7 +174,7 @@ export default function TaskDetailsPage({ taskId }: TaskDetailsPageProps) {
             </CardContent>
           </Card>
         )}
-      </div>{" "}
+      </div>
     </div>
   );
 }

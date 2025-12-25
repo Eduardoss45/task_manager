@@ -6,10 +6,31 @@ O foco principal foi entregar uma solução **end-to-end funcional**, com **sepa
 
 ---
 
+## ⚠️ Disclaimer Importante – Variáveis de Ambiente (`.env`)
+
+> **⚠️ Atenção:**
+> O correto funcionamento do sistema **depende obrigatoriamente** da configuração adequada dos arquivos `.env` em **todos os serviços** do projeto.
+
+Antes de executar o sistema (localmente ou via Docker), é necessário:
+
+* Criar os arquivos `.env` a partir dos exemplos fornecidos (`.env.example`)
+* Garantir que **todas as variáveis obrigatórias estejam preenchidas**
+* Configurar corretamente:
+
+  * Credenciais de banco de dados
+  * URLs internas entre serviços
+  * Chaves JWT
+  * Configuração do RabbitMQ
+  * Configuração do WebSocket
+
+> A ausência ou configuração incorreta de variáveis de ambiente pode causar **falhas silenciosas**, erros de autenticação, falha na comunicação entre serviços ou falha total da aplicação.
+
+---
+
 ## 🧱 Visão Geral da Arquitetura
 
 ```bash
-Frontend (React + TanStack Router)
+Frontend (React + TanStack Router + TanStack Query)
         │
         ▼
 API Gateway (NestJS)
@@ -98,15 +119,50 @@ API Gateway (NestJS)
 
 * **React (Vite)**
 * **TanStack Router**
+* **TanStack Query**
 * **Tailwind CSS**
 * **shadcn/ui**
 * **react-hook-form + zod**
 
-### Características
+---
+
+## ⚛️ Gerenciamento de Estado & Cache (TanStack Query)
+
+O frontend utiliza **TanStack Query** como solução principal para **fetching, cache e sincronização de dados assíncronos**.
+
+### Responsabilidades
+
+* Cache inteligente de dados vindos da API
+* Revalidação automática de dados (`invalidateQueries`)
+* Controle de estados:
+
+  * `loading`
+  * `error`
+  * `success`
+* Sincronização entre mutações e queries
+* Redução de estado global manual
+
+### Casos de Uso no Projeto
+
+* Listagem de tarefas
+* Detalhe de tarefa
+* Comentários paginados
+* Atualização automática após:
+
+  * edição de tarefas
+  * criação de comentários
+* Integração com notificações via WebSocket (invalidação seletiva de queries)
+
+> O TanStack Query foi adotado para **evitar estado duplicado**, melhorar a consistência visual da aplicação e reduzir complexidade no frontend.
+
+---
+
+### Características do Frontend
 
 * Skeleton loaders
 * WebSocket conectado após login
 * Feedback visual via toast
+* Atualização otimista e invalidação de cache controlada
 
 ### Páginas Implementadas
 
@@ -154,6 +210,7 @@ A aplicação utiliza **Winston** como logger padronizado, integrado ao **Logger
 * Logger centralizado por serviço
 * Logs formatados via configuração compartilhada (`winston.config`)
 * Níveis suportados:
+
   * `info`
   * `warn`
   * `error`
@@ -273,6 +330,7 @@ npm run dev
 * Relacionamentos entre serviços via **UUID**
 * Logs estruturados desde o início
 * Eventos emitidos de forma ampla e filtrados no consumer
+* Cache e sincronização de estado delegados ao **TanStack Query**
 
 ---
 
@@ -288,7 +346,6 @@ npm run dev
 
 ## 🚀 Melhorias Futuras
 
-* TanStack Query
 * Validação de env com Joi
 * Redis para cache
 * Retry + DLQ no RabbitMQ

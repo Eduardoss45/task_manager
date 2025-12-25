@@ -18,11 +18,7 @@ import {
   ApiQuery,
   ApiParam,
 } from '@nestjs/swagger';
-import {
-  CreateCommentDto,
-  UpdateTaskDto,
-  CreateTaskDto,
-} from '../dtos';
+import { CreateCommentDto, UpdateTaskDto, CreateTaskDto } from '../dtos';
 import {
   CreateCommentCommand,
   CreateTaskCommand,
@@ -63,7 +59,20 @@ export class TasksGatewayController {
           status: 'TODO',
           authorId: '987e6543-e21b-12d3-a456-426655440000',
           authorName: 'John',
-          assignedUserIds: [],
+          comments: [
+            {
+              id: '987e6543-e21b-12d3-a456-426655440001',
+              content: 'Comentário de teste',
+              authorId: '987e6543-e21b-12d3-a456-426655440000',
+              authorName: 'John',
+            },
+          ],
+          assignedUserIds: [
+            {
+              username: 'john_doe',
+              userId: '123e4567-e89b-12d3-a456-426614174000',
+            },
+          ],
         },
       ],
     },
@@ -83,7 +92,12 @@ export class TasksGatewayController {
         title: 'Estudar NestJS',
         authorId: '987e6543-e21b-12d3-a456-426655440000',
         authorName: 'John',
-        assignedUserIds: [],
+        assignedUserIds: [
+          {
+            username: 'john_doe',
+            userId: '123e4567-e89b-12d3-a456-426614174000',
+          },
+        ],
       },
     },
   })
@@ -113,7 +127,21 @@ export class TasksGatewayController {
         status: 'TODO',
         authorId: '987e6543-e21b-12d3-a456-426655440000',
         authorName: 'John',
-        assignedUserIds: [],
+        comments: [
+          {
+            id: '987e6543-e21b-12d3-a456-426655440001',
+            content: 'Comentário de teste',
+            authorId: '987e6543-e21b-12d3-a456-426655440000',
+            authorName: 'John',
+          },
+        ],
+        assignedUserIds: [
+          {
+            username: 'john_doe',
+            userId: '123e4567-e89b-12d3-a456-426614174000',
+          },
+        ],
+        audit: [],
       },
     },
   })
