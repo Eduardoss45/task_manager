@@ -1,30 +1,45 @@
-# builder
-FROM node:20.11.1 AS builder
-WORKDIR /app
-
-# copiar arquivos do root do monorepo
-COPY package*.json ./
-COPY package-lock.json ./
-COPY turbo.json ./
-RUN npm install
-RUN npm install -g @nestjs/cli
-
-# copiar código da app
-COPY apps/api-gateway ./apps/api-gateway
-WORKDIR /app/apps/api-gateway
-
-# build
-RUN npm run build
-
-# runtime
-FROM node:20.11.1-alpine AS runtime
+# =========================
+# BASE
+# =========================
+FROM node:20-alpine AS base
 WORKDIR /app
 ENV NODE_ENV=production
 
-# copiar node_modules e dist
+# =========================
+# DEPS
+# =========================
+FROM base AS deps
+
+# Copiamos apenas manifests para cache eficiente
+COPY package.json package-lock.json ./
+COPY apps/api-gateway/package.json apps/api-gateway/
+
+RUN npm ci
+
+# =========================
+# BUILD
+# =========================
+FROM base AS builder
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Build somente o serviço
+RUN npm run build --workspace=@task_manager/api-gateway
+
+# =========================
+# RUNTIME
+# =========================
+FROM base AS runner
+
+# Segurança básica
+RUN addgroup -S app && adduser -S app -G app
+USER app
+
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/api-gateway/dist ./dist
-COPY --from=builder /app/apps/api-gateway/.env ./
+COPY --from=builder /app/apps/api-gateway/package.json ./package.json
 
 EXPOSE 3000
-CMD ["node", "dist/main"]
+
+CMD ["node", "dist/main.js"]

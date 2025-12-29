@@ -1,32 +1,36 @@
-# builder
-FROM node:22.12.0 AS builder
+# =========================
+# BUILD
+# =========================
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# copiar root do monorepo
-COPY package*.json ./
-COPY package-lock.json ./
-COPY turbo.json ./
-RUN npm install --include=dev
+# Instala dependências do monorepo
+COPY package.json package-lock.json ./
+COPY apps/web/package.json apps/web/package.json
 
-# copiar todo o código
+RUN npm ci
+
+# Copia código
 COPY . .
 
-# build apenas a app web
-WORKDIR /app/apps/web
+# Build do frontend
+RUN npm run build --workspace=@task_manager/web
 
-RUN rm -f package-lock.json && npm install --include=dev
 
-RUN npm run build
+# =========================
+# RUNTIME
+# =========================
+FROM nginx:alpine
 
-# runtime
-FROM node:22.12.0-alpine AS runtime
-WORKDIR /app
-ENV NODE_ENV=production
+# Remove config default
+RUN rm /etc/nginx/conf.d/default.conf
 
-RUN npm install -g serve
+# Config Nginx SPA
+COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 
-COPY --from=builder /app/apps/web/dist ./dist
-COPY --from=builder /app/apps/web/.env ./
+# Copia build final
+COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
 
-EXPOSE 5173
-CMD ["serve", "-s", "dist", "-l", "5173"]
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

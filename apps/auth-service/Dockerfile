@@ -1,26 +1,45 @@
-# builder
-FROM node:20.11.1 AS builder
-WORKDIR /app
-
-COPY package*.json ./
-COPY package-lock.json ./
-COPY turbo.json ./
-RUN npm install
-RUN npm install -g @nestjs/cli
-
-COPY apps/auth-service ./apps/auth-service
-WORKDIR /app/apps/auth-service
-
-RUN npm run build
-
-# runtime
-FROM node:20.11.1-alpine AS runtime
+# =========================
+# BASE
+# =========================
+FROM node:20-alpine AS base
 WORKDIR /app
 ENV NODE_ENV=production
 
+# =========================
+# DEPS
+# =========================
+FROM base AS deps
+
+# Copiamos apenas manifests para cache eficiente
+COPY package.json package-lock.json ./
+COPY apps/auth-service/package.json apps/auth-service/
+
+RUN npm ci
+
+# =========================
+# BUILD
+# =========================
+FROM base AS builder
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Build somente o serviço
+RUN npm run build --workspace=@task_manager/auth-service
+
+# =========================
+# RUNTIME
+# =========================
+FROM base AS runner
+
+# Segurança básica
+RUN addgroup -S app && adduser -S app -G app
+USER app
+
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/auth-service/dist ./dist
-COPY --from=builder /app/apps/auth-service/.env ./
+COPY --from=builder /app/apps/auth-service/package.json ./package.json
 
-# serviço de mensageria (não expõe porta)
+EXPOSE 3000
+
 CMD ["node", "dist/src/main.js"]
