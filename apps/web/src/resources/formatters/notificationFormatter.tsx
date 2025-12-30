@@ -1,4 +1,4 @@
-import { toast } from "sonner";
+import { toast } from 'sonner';
 import {
   PlusCircle,
   RefreshCcw,
@@ -8,10 +8,10 @@ import {
   Pencil,
   MessageSquare,
   Bell,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { diffAssignedUsers } from "@/lib/utils/notificationDiff";
-import type { TaskUpdatedPayload } from "@/types/notifications";
+import { diffAssignedUsers } from '@/resources/utils/notificationDiff';
+import type { TaskUpdatedPayload } from '@/types/notifications';
 
 type FormatterArgs = {
   type: string;
@@ -30,7 +30,7 @@ function ToastContent({ icon: Icon, text }: { icon: React.ElementType; text: str
 
 export function formatAndNotify({ type, payload, currentUserId }: FormatterArgs) {
   switch (type) {
-    case "task:created": {
+    case 'task:created': {
       toast.info(
         <ToastContent
           icon={PlusCircle}
@@ -40,7 +40,7 @@ export function formatAndNotify({ type, payload, currentUserId }: FormatterArgs)
       return;
     }
 
-    case "task:updated": {
+    case 'task:updated': {
       const { actorName, task, before, after, actorId } = payload as TaskUpdatedPayload;
 
       if (actorId === currentUserId) return;
@@ -88,7 +88,7 @@ export function formatAndNotify({ type, payload, currentUserId }: FormatterArgs)
       return;
     }
 
-    case "comment:new": {
+    case 'comment:new': {
       toast(
         <ToastContent
           icon={MessageSquare}

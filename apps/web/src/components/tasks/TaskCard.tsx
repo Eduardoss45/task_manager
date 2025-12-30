@@ -1,21 +1,21 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Calendar, User } from "lucide-react";
-import type { Task } from "@/types/task";
-import { formatDate } from "@/lib/formatters/date";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Calendar, User } from 'lucide-react';
+import type { Task } from '@/types/task';
+import { formatDate } from '@/resources/formatters/date';
 
 const statusColor: Record<string, string> = {
-  TODO: "bg-gray-500",
-  IN_PROGRESS: "bg-blue-500",
-  REVIEW: "bg-yellow-500",
-  DONE: "bg-green-500",
+  TODO: 'bg-gray-500',
+  IN_PROGRESS: 'bg-blue-500',
+  REVIEW: 'bg-yellow-500',
+  DONE: 'bg-green-500',
 };
 
 const priorityColor: Record<string, string> = {
-  LOW: "bg-green-600",
-  MEDIUM: "bg-yellow-600",
-  HIGH: "bg-red-600",
+  LOW: 'bg-green-600',
+  MEDIUM: 'bg-yellow-600',
+  HIGH: 'bg-red-600',
 };
 
 export function TaskCard({ task }: { task: Task }) {

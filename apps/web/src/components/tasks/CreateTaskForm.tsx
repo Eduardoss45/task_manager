@@ -1,12 +1,12 @@
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { editTaskSchema } from "@/lib/validators/tasks/taskValidators";
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { editTaskSchema } from '@/resources/validators/tasks/taskValidators';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 
 type CreateTaskFormProps = {
   onSubmit: (data: any) => Promise<void>;
@@ -16,9 +16,9 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
   const form = useForm({
     resolver: zodResolver(editTaskSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      dueDate: "",
+      title: '',
+      description: '',
+      dueDate: '',
     },
   });
 
@@ -29,13 +29,13 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
     >
       <Input
         placeholder="Título"
-        {...form.register("title")}
+        {...form.register('title')}
         className="bg-zinc-950 text-zinc-100 placeholder:text-zinc-500 border-zinc-800 focus-visible:ring-blue-500"
       />
 
       <Textarea
         placeholder="Descrição"
-        {...form.register("description")}
+        {...form.register('description')}
         className="bg-zinc-950 text-zinc-100 placeholder:text-zinc-500 border-zinc-800 focus-visible:ring-blue-500"
       />
 
@@ -58,7 +58,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
     focus-visible:ring-2 focus-visible:ring-blue-500
   "
               >
-                {field.value ? new Date(field.value).toLocaleDateString() : "Selecione uma data"}
+                {field.value ? new Date(field.value).toLocaleDateString() : 'Selecione uma data'}
               </Button>
             </PopoverTrigger>
 

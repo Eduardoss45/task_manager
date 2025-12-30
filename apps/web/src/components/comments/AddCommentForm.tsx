@@ -1,8 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queries/queryKeys';
+import { queryKeys } from '@/resources/queries/queryKeys';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { commentSchema } from '@/lib/validators/tasks/commentValidators';
+import { commentSchema } from '@/resources/validators/tasks/commentValidators';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useTaskManager } from '@/hooks/tasks/useTaskManager';

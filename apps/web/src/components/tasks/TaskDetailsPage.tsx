@@ -11,7 +11,7 @@ import { ArrowLeft, Calendar, User, MessageSquare, History } from 'lucide-react'
 import { useTask } from '@/hooks/queries/useTask';
 import { useUsers } from '@/hooks/queries/useUsers';
 import { useDeleteTask } from '@/hooks/mutations/useDeleteTask';
-import { formatDate } from '@/lib/formatters/date';
+import { formatDate } from '@/resources/formatters/date';
 import { EditTaskForm } from '@/components/tasks/EditTaskForm';
 import { AddCommentForm } from '@/components/comments/AddCommentForm';
 import { CommentsList } from '@/components/comments/CommentsList';

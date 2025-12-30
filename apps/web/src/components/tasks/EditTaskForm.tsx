@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { editTaskSchema } from '@/lib/validators/tasks/taskValidators';
-import type { TaskPriority, TaskStatus } from '@/lib/validators/tasks/taskValidators';
+import { editTaskSchema } from '@/resources/validators/tasks/taskValidators';
+import type { TaskPriority, TaskStatus } from '@/resources/validators/tasks/taskValidators';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
@@ -83,7 +83,6 @@ export function EditTaskForm({ task, availableUsers, onSuccess }: EditTaskFormPr
       }
     );
   }
-
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

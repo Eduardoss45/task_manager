@@ -1,8 +1,8 @@
-import { useEffect } from "react";
-import { connectNotifications, disconnectNotifications } from "@/services/notifications.socket";
-import { authStore } from "@/store/auth.store";
-import { useTaskManager } from "@/hooks/tasks/useTaskManager";
-import { formatAndNotify } from "@/lib/formatters/notificationFormatter";
+import { useEffect } from 'react';
+import { connectNotifications, disconnectNotifications } from '@/services/notifications.socket';
+import { authStore } from '@/store/auth.store';
+import { useTaskManager } from '@/hooks/tasks/useTaskManager';
+import { formatAndNotify } from '@/resources/formatters/notificationFormatter';
 
 export function useNotifications() {
   const user = authStore(state => state.user);
@@ -13,18 +13,18 @@ export function useNotifications() {
 
     const socket = connectNotifications(user.id);
 
-    socket.on("connect", () => {
-      console.log("Notifications connected");
+    socket.on('connect', () => {
+      console.log('Notifications connected');
     });
 
-    socket.on("notification", ({ type, payload }) => {
+    socket.on('notification', ({ type, payload }) => {
       formatAndNotify({
         type,
         payload,
         currentUserId: user.id,
       });
 
-      if (type.startsWith("task")) {
+      if (type.startsWith('task')) {
         if (payload?.task?.id) {
           invalidateTask(payload.task.id);
         } else {
@@ -32,17 +32,17 @@ export function useNotifications() {
         }
       }
 
-      if (type === "comment:new" && payload?.task?.id) {
+      if (type === 'comment:new' && payload?.task?.id) {
         invalidateTask(payload.task.id);
       }
     });
 
-    socket.on("disconnect", () => {
-      console.log("Notifications disconnected");
+    socket.on('disconnect', () => {
+      console.log('Notifications disconnected');
     });
 
     return () => {
-      socket.off("notification");
+      socket.off('notification');
       disconnectNotifications();
     };
   }, [user?.id]);

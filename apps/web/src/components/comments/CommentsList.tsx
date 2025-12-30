@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ShimmerSkeleton } from '@/components/skeletons/ShimmerSkeleton';
-import { formatDate } from '@/lib/formatters/date';
+import { formatDate } from '@/resources/formatters/date';
 import { useComments } from '@/hooks/queries/useComments';
 
 export function CommentsList({ taskId }: { taskId: string }) {

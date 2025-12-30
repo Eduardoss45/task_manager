@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/services/api';
-import { queryKeys } from '@/lib/queries/queryKeys';
+import { queryKeys } from '@/resources/queries/queryKeys';
 import type { TaskDetails } from '@/types/task-details';
 
 export function useTask(taskId: string) {

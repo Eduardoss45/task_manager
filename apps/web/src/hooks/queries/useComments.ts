@@ -1,6 +1,6 @@
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { api } from '@/services/api';
-import { queryKeys } from '@/lib/queries/queryKeys';
+import { queryKeys } from '@/resources/queries/queryKeys';
 
 type Comment = {
   id: string;
