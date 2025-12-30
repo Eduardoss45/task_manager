@@ -11,7 +11,7 @@ export function useUsers() {
   return useQuery<AssignedUser[]>({
     queryKey: queryKeys.users,
     queryFn: async () => {
-      const res = await api.get('api/auth/users');
+      const res = await api.get('/api/auth/users');
 
       return res.data.availableUsers ?? [];
     },

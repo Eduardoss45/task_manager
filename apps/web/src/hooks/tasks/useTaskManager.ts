@@ -22,7 +22,7 @@ export function useTaskManager() {
 
     try {
       setLoading(true);
-      const res = await api.get(`api/tasks?page=${page}&size=${size}`, {
+      const res = await api.get(`/api/tasks?page=${page}&size=${size}`, {
         withCredentials: true,
       });
       setTasks(res.data.items ?? res.data);
@@ -39,7 +39,7 @@ export function useTaskManager() {
   const getTask = useCallback(async (id: string) => {
     if (taskCache.current[id]) return taskCache.current[id];
 
-    const res = await api.get(`api/tasks/${id}`, { withCredentials: true });
+    const res = await api.get(`/api/tasks/${id}`, { withCredentials: true });
     taskCache.current[id] = res.data;
     return res.data;
   }, []);
@@ -76,7 +76,7 @@ export function useTaskManager() {
 
   const createTask = async (data: Partial<Task>) => {
     try {
-      const res = await api.post("api/tasks", data, { withCredentials: true });
+      const res = await api.post("/api/tasks", data, { withCredentials: true });
 
       invalidateAllTasks();
       toast.success("Task criada com sucesso");
@@ -89,7 +89,7 @@ export function useTaskManager() {
 
   const updateTask = async (id: string, data: Partial<Task>) => {
     try {
-      const res = await api.put(`api/tasks/${id}`, data, {
+      const res = await api.put(`/api/tasks/${id}`, data, {
         withCredentials: true,
       });
 
@@ -105,7 +105,7 @@ export function useTaskManager() {
 
   const deleteTask = async (id: string) => {
     try {
-      await api.delete(`api/tasks/${id}`, { withCredentials: true });
+      await api.delete(`/api/tasks/${id}`, { withCredentials: true });
       invalidateAllTasks();
       toast.success("Task removida");
       return true;
@@ -117,7 +117,7 @@ export function useTaskManager() {
 
   const addComment = async (taskId: string, content: string) => {
     try {
-      await api.post(`api/tasks/${taskId}/comments`, { content }, { withCredentials: true });
+      await api.post(`/api/tasks/${taskId}/comments`, { content }, { withCredentials: true });
 
       invalidateTask(taskId);
       toast.success("Comentário adicionado");
@@ -127,7 +127,7 @@ export function useTaskManager() {
   };
 
   const getComments = async (taskId: string, page = 1, size = 10) => {
-    const res = await api.get(`api/tasks/${taskId}/comments?page=${page}&size=${size}`, {
+    const res = await api.get(`/api/tasks/${taskId}/comments?page=${page}&size=${size}`, {
       withCredentials: true,
     });
     return res.data;

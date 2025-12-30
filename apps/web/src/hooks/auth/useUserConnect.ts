@@ -27,7 +27,7 @@ export function useUserConnect() {
 
   async function bootstrapSession() {
     try {
-      const res = await api.post("api/auth/refresh");
+      const res = await api.post("/api/auth/refresh");
       setUser(res.data.user);
     } catch {
       clearUser();
@@ -39,7 +39,7 @@ export function useUserConnect() {
   async function login(data: { email: string; password: string }) {
     setLoading(true);
     try {
-      const res = await api.post("api/auth/login", data);
+      const res = await api.post("/api/auth/login", data);
       setUser(res.data.user);
       toast.success("Login realizado com sucesso");
       navigate({ to: "/tasks" });
@@ -61,7 +61,7 @@ export function useUserConnect() {
     try {
       const { confirmPassword, ...payload } = data;
 
-      const res = await api.post("api/auth/register", payload);
+      const res = await api.post("/api/auth/register", payload);
 
       setUser(res.data.user);
       toast.success("Conta criada com sucesso");
@@ -76,7 +76,7 @@ export function useUserConnect() {
   async function forgotPassword(data: { username: string; email: string }) {
     setLoading(true);
     try {
-      const res = await api.post("api/auth/forgot-password", data);
+      const res = await api.post("/api/auth/forgot-password", data);
 
       if (res.data?.resetToken) {
         toast.success("Token gerado com sucesso");
@@ -96,7 +96,7 @@ export function useUserConnect() {
   async function resetPassword(data: { token: string; newPassword: string }) {
     setLoading(true);
     try {
-      await api.post("api/auth/reset-password", data);
+      await api.post("/api/auth/reset-password", data);
       toast.success("Senha atualizada com sucesso");
       return true;
     } catch (e: any) {
@@ -109,7 +109,7 @@ export function useUserConnect() {
 
   async function logout() {
     try {
-      await api.post("api/auth/logout");
+      await api.post("/api/auth/logout");
     } finally {
       clearUser();
       navigate({ to: "/" });

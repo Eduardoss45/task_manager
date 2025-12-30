@@ -7,7 +7,7 @@ export function useDeleteTask() {
 
   return useMutation({
     mutationFn: async (taskId: string) => {
-      await api.delete(`api/tasks/${taskId}`);
+      await api.delete(`/api/tasks/${taskId}`);
     },
     onSuccess: (_, taskId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks() });

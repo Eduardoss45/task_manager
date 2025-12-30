@@ -15,12 +15,12 @@ api.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes("api/auth/refresh")
+      !originalRequest.url?.includes("/api/auth/refresh")
     ) {
       originalRequest._retry = true;
 
       try {
-        await api.post("api/auth/refresh");
+        await api.post("/api/auth/refresh");
         return api(originalRequest);
       } catch {
         clearUser();
