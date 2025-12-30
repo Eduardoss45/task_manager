@@ -3,7 +3,6 @@
 # =========================
 FROM node:20-alpine AS base
 WORKDIR /app
-ENV NODE_ENV=production
 
 # =========================
 # DEPS
@@ -14,7 +13,7 @@ FROM base AS deps
 COPY package.json package-lock.json ./
 COPY apps/tasks-service/package.json apps/tasks-service/
 
-RUN npm ci
+RUN npm installstall
 
 # =========================
 # BUILD

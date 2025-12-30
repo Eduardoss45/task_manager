@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY apps/web/package.json apps/web/package.json
 
-RUN npm ci
+RUN npm install
 
 # Copia código
 COPY . .
