@@ -13,7 +13,7 @@ FROM base AS deps
 COPY package.json package-lock.json ./
 COPY apps/tasks-service/package.json apps/tasks-service/
 
-RUN npm installstall
+RUN npm install
 
 # =========================
 # BUILD

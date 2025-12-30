@@ -13,7 +13,7 @@ FROM base AS deps
 COPY package.json package-lock.json ./
 COPY apps/auth-service/package.json apps/auth-service/
 
-RUN npm installstall
+RUN npm install
 
 # =========================
 # BUILD

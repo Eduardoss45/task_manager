@@ -13,7 +13,7 @@ FROM base AS deps
 COPY package.json package-lock.json ./
 COPY apps/notifications-service/package.json apps/notifications-service/
 
-RUN npm installstall
+RUN npm install
 
 # =========================
 # BUILD
