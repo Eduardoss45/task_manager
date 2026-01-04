@@ -11,7 +11,7 @@ O foco principal foi entregar uma solução **end-to-end funcional**, com **sepa
 > **⚠️ Atenção:**
 > O correto funcionamento do sistema **depende obrigatoriamente** da configuração adequada dos arquivos `.env` em **todos os serviços** do projeto.
 
-Antes de executar o sistema (localmente ou via Docker), é necessário:
+Antes de executar o sistema (localmente), é necessário:
 
 * Criar os arquivos `.env` a partir dos exemplos fornecidos (`.env.example`)
 * Garantir que **todas as variáveis obrigatórias estejam preenchidas**
