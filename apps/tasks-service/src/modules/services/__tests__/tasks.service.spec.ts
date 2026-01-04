@@ -3,7 +3,11 @@ import { TasksService } from '../tasks.service';
 import { TasksRepository } from '../../repositories/tasks.repository';
 import { TaskAuditService } from '../task-audit.service';
 import { LoggerService } from '../../logger';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { of } from 'rxjs';
 
 const repoMock = {
@@ -121,7 +125,7 @@ describe('TasksService', () => {
     );
   });
 
-  it('should update task and emit update event', async () => {
+  it('should update task and emit update event when actor is author', async () => {
     const before = {
       id: validTaskId,
       title: 'Old',
@@ -137,7 +141,11 @@ describe('TasksService', () => {
       .mockResolvedValueOnce(before)
       .mockResolvedValueOnce(after);
 
-    await service.updateTask(validTaskId, { title: 'New' } as any);
+    await service.updateTask(validTaskId, {
+      title: 'New',
+      actorId: validAuthorId,
+      actorName: 'John',
+    } as any);
 
     expect(repoMock.updateTask).toHaveBeenCalled();
     expect(auditMock.log).toHaveBeenCalled();
@@ -145,6 +153,62 @@ describe('TasksService', () => {
       'task.updated',
       expect.any(Object),
     );
+  });
+
+  it('should throw ForbiddenException if actor is not assigned to task', async () => {
+    const before = {
+      id: validTaskId,
+      title: 'Old',
+      status: 'TODO',
+      assignedUserIds: [
+        {
+          userId: '111e1111-e11b-12d3-a456-426614174001',
+          username: 'Jane',
+        },
+      ],
+      authorId: validAuthorId,
+      authorName: 'John',
+    };
+
+    repoMock.findTaskById.mockResolvedValue(before);
+
+    await expect(
+      service.updateTask(validTaskId, {
+        title: 'New',
+        actorId: '222e2222-e22b-12d3-a456-426614174002',
+        actorName: 'Hacker',
+      } as any),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+
+    expect(repoMock.updateTask).not.toHaveBeenCalled();
+    expect(auditMock.log).not.toHaveBeenCalled();
+  });
+
+  it('should allow assigned user to update task', async () => {
+    const assignedUserId = '111e1111-e11b-12d3-a456-426614174001';
+
+    const before = {
+      id: validTaskId,
+      title: 'Old',
+      status: 'TODO',
+      assignedUserIds: [{ userId: assignedUserId, username: 'Jane' }],
+      authorId: validAuthorId,
+      authorName: 'John',
+    };
+
+    const after = { ...before, title: 'Updated' };
+
+    repoMock.findTaskById
+      .mockResolvedValueOnce(before)
+      .mockResolvedValueOnce(after);
+
+    await service.updateTask(validTaskId, {
+      title: 'Updated',
+      actorId: assignedUserId,
+      actorName: 'Jane',
+    } as any);
+
+    expect(repoMock.updateTask).toHaveBeenCalled();
   });
 
   it('should delete task', async () => {

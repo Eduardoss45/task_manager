@@ -12,6 +12,7 @@ import {
   Inject,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { TasksRepository } from '../repositories/tasks.repository';
 import { Task } from '../entities/task.entity';
@@ -28,6 +29,24 @@ export class TasksService {
     @Inject('NOTIFICATIONS_EVENTS') private readonly client: ClientProxy,
     private readonly logger: LoggerService,
   ) {}
+
+  private assertActorCanModifyTask(actorId: string | undefined, task: Task) {
+    if (!actorId) {
+      throw new ForbiddenException('Actor not informed');
+    }
+
+    if (task.authorId === actorId) {
+      return;
+    }
+
+    const isAssigned = task.assignedUserIds?.some((u) => u.userId === actorId);
+
+    if (!isAssigned) {
+      throw new ForbiddenException(
+        'User is not assigned to this task and cannot modify it',
+      );
+    }
+  }
 
   private assertAuthorNotAssigned(
     authorId: string | undefined,
@@ -206,6 +225,8 @@ export class TasksService {
     if (!before) throw new NotFoundException('Task not found');
 
     const { actorId, actorName, ...taskUpdates } = updates;
+
+    this.assertActorCanModifyTask(actorId, before);
 
     const updatesEntity: Partial<Task> = {
       ...taskUpdates,

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { api } from '@/services/api';
 import { queryKeys } from '@/resources/queries/queryKeys';
 
@@ -14,6 +15,10 @@ type UpdateTaskInput = {
   }[];
 };
 
+type ApiError = {
+  message: string;
+};
+
 export function useUpdateTask(taskId: string) {
   const queryClient = useQueryClient();
 
@@ -22,6 +27,7 @@ export function useUpdateTask(taskId: string) {
       const res = await api.put(`/api/tasks/${taskId}`, data);
       return res.data;
     },
+
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.task(taskId),
@@ -30,6 +36,12 @@ export function useUpdateTask(taskId: string) {
       queryClient.invalidateQueries({
         queryKey: queryKeys.tasks(),
       });
+    },
+
+    onError: (error: AxiosError<ApiError>) => {
+      if (error.response?.status === 403) {
+        throw new Error('Você não tem permissão para editar esta tarefa');
+      }
     },
   });
 }

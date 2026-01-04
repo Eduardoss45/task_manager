@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Controller } from 'react-hook-form';
+import { toast } from 'sonner';
 import {
   Select,
   SelectContent,
@@ -68,20 +69,27 @@ export function EditTaskForm({ task, availableUsers, onSuccess }: EditTaskFormPr
   }
 
   function onSubmit(data: any) {
-    updateTaskMutation.mutate(
-      {
+    updateTaskMutation
+      .mutateAsync({
         ...data,
         assignedUserIds: assigned.map(u => ({
           userId: u.userId,
           username: u.username,
         })),
-      },
-      {
-        onSuccess: updatedTask => {
-          onSuccess(updatedTask);
-        },
-      }
-    );
+      })
+      .then(updatedTask => {
+        toast.success('Tarefa atualizada com sucesso');
+        onSuccess(updatedTask);
+      })
+      .catch((err: any) => {
+        // 🔐 Permissão
+        if (err?.response?.status === 403 || err?.message === 'TASK_FORBIDDEN') {
+          toast.error('Você não tem permissão para editar esta tarefa');
+          return;
+        }
+
+        toast.error('Erro ao salvar alterações');
+      });
   }
 
   return (

@@ -7,6 +7,7 @@ import {
   NotFoundException,
   InternalServerErrorException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Observable, catchError, throwError } from 'rxjs';
 import { LoggerService } from '../logger/logger.service';
@@ -65,6 +66,8 @@ export class RmqExceptionInterceptor implements NestInterceptor {
     switch (statusCode) {
       case 400:
         return new BadRequestException(message);
+      case 403:
+        return new ForbiddenException(message);
       case 404:
         return new NotFoundException(message);
       case 409:
