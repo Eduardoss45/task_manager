@@ -11,17 +11,19 @@ O foco principal foi entregar uma solução **end-to-end funcional**, com **sepa
 > **⚠️ Atenção:**
 > O correto funcionamento do sistema **depende obrigatoriamente** da configuração adequada dos arquivos `.env` em **todos os serviços** do projeto.
 
-Antes de executar o sistema (localmente), é necessário:
+Antes de executar o sistema localmente, é obrigatório:
 
-* Criar os arquivos `.env` a partir dos exemplos fornecidos (`.env.example`)
-* Garantir que **todas as variáveis obrigatórias estejam preenchidas**
-* Configurar corretamente:
+1. **Criar os arquivos `.env`** a partir dos modelos fornecidos (`.env.example`).
+2. **Garantir que todas as variáveis obrigatórias estejam devidamente preenchidas**.
+3. **Configurar corretamente os seguintes itens**:
 
-  * Credenciais de banco de dados
-  * URLs internas entre serviços
-  * Chaves JWT
-  * Configuração do RabbitMQ
-  * Configuração do WebSocket
+   * **Credenciais de banco de dados** (host, porta, usuário, senha e nome do banco).
+   * **URLs internas de comunicação entre os serviços**.
+   * **Chaves JWT** utilizadas pelo `api-gateway` e pelo `auth-service`
+
+     > As chaves **DEVEM SER IDÊNTICAS** para garantir a validação correta dos tokens.
+   * **Configuração do RabbitMQ** (host, porta, usuário, senha e vhost, se aplicável).
+   * **Configuração do WebSocket** (URL, porta e demais parâmetros necessários).
 
 > A ausência ou configuração incorreta de variáveis de ambiente pode causar **falhas silenciosas**, erros de autenticação, falha na comunicação entre serviços ou falha total da aplicação.
 
